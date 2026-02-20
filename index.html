@@ -4,620 +4,378 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NFL Dynasty Builder and Simulator</title>
+<title>Dynasty Draft | 17-0 Builder</title>
 <style>
 :root {
---bg: #0f172a;
---card-bg: #1e293b;
---text: #f8fafc;
+--bg: #0b0f1a;
+--card-bg: #161b2c;
+--text: #ffffff;
 --text-muted: #94a3b8;
 --accent: #3b82f6;
---accent-glow: rgba(59, 130, 246, 0.5);
+--accent-glow: rgba(59, 130, 246, 0.4);
 --success: #22c55e;
---transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
---border: rgba(255, 255, 255, 0.1);
+--border: rgba(255, 255, 255, 0.08);
+--card-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
 
 ```
     [data-theme="light"] {
-        --bg: #f1f5f9;
+        --bg: #f8fafc;
         --card-bg: #ffffff;
         --text: #0f172a;
         --text-muted: #64748b;
         --accent: #2563eb;
-        --accent-glow: rgba(37, 99, 235, 0.2);
+        --accent-glow: rgba(37, 99, 235, 0.15);
         --border: rgba(0, 0, 0, 0.05);
+        --card-shadow: 0 10px 30px rgba(0,0,0,0.05);
     }
 
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        font-family: 'Inter', -apple-system, sans-serif;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
 
     body {
         background-color: var(--bg);
         color: var(--text);
-        transition: background-color 0.5s ease;
+        transition: background-color 0.4s ease, color 0.4s ease;
         min-height: 100vh;
-        padding-bottom: 50px;
-        overflow-x: hidden;
+        padding: 40px 20px;
     }
 
-    /* --- UI Components --- */
-    .container {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 0 20px;
-    }
+    .container { max-width: 1200px; margin: 0 auto; }
 
-    header {
-        padding: 40px 0;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
+    /* --- Header --- */
+    header { text-align: center; margin-bottom: 50px; position: relative; }
+    .main-title { font-size: 3.5rem; font-weight: 900; letter-spacing: -2px; text-transform: uppercase; background: linear-gradient(135deg, var(--accent), #60a5fa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .sub-title { font-size: 1.1rem; color: var(--text-muted); font-weight: 500; margin-top: -5px; }
 
-    .logo-area h1 {
-        font-size: 2rem;
-        font-weight: 800;
-        letter-spacing: -1px;
-        background: linear-gradient(to right, var(--accent), #818cf8);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-    }
+    .theme-toggle { position: absolute; top: 0; right: 0; background: var(--card-bg); border: 1px solid var(--border); color: var(--text); padding: 10px; border-radius: 50%; cursor: pointer; box-shadow: var(--card-shadow); transition: 0.3s; }
 
-    .controls {
-        display: flex;
-        gap: 15px;
-        align-items: center;
-    }
+    /* --- Spin Section --- */
+    .draft-zone { background: var(--card-bg); border-radius: 30px; padding: 40px; border: 1px solid var(--border); box-shadow: var(--card-shadow); margin-bottom: 40px; text-align: center; }
+    .spinner-display { height: 220px; display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 20px; }
+    .spinning-logo { width: 160px; height: 160px; object-fit: contain; transition: 0.2s; filter: drop-shadow(0 5px 15px rgba(0,0,0,0.3)); }
+    .spinning-logo.active { animation: pulse 0.6s infinite alternate; filter: drop-shadow(0 0 20px var(--accent)); }
+    
+    .current-team-name { font-size: 2rem; font-weight: 800; margin: 15px 0; min-height: 2.5rem; }
+    .btn { padding: 15px 35px; border-radius: 15px; border: none; font-weight: 700; cursor: pointer; transition: 0.3s; font-size: 1rem; }
+    .btn-primary { background: var(--accent); color: white; box-shadow: 0 5px 20px var(--accent-glow); }
+    .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 8px 25px var(--accent-glow); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
 
-    .btn {
-        padding: 12px 24px;
-        border-radius: 12px;
-        border: none;
-        cursor: pointer;
-        font-weight: 600;
-        transition: var(--transition);
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 0.9rem;
-    }
+    /* --- Assign Buttons --- */
+    .assign-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; margin-top: 20px; max-width: 700px; margin-left: auto; margin-right: auto; opacity: 0; pointer-events: none; transition: 0.5s; }
+    .assign-grid.visible { opacity: 1; pointer-events: all; }
+    .btn-assign { background: var(--bg); color: var(--text); border: 1px solid var(--border); padding: 10px; font-size: 0.8rem; border-radius: 10px; }
+    .btn-assign:hover { background: var(--accent); color: white; }
 
-    .btn-primary {
-        background: var(--accent);
-        color: white;
-        box-shadow: 0 4px 15px var(--accent-glow);
-    }
+    /* --- Toggles --- */
+    .toggles-bar { display: flex; justify-content: center; gap: 30px; margin-bottom: 30px; }
+    .toggle-item { display: flex; align-items: center; gap: 10px; color: var(--text-muted); font-size: 0.9rem; }
+    
+    /* --- Roster Layout --- */
+    .game-area { display: grid; grid-template-columns: 1fr; gap: 30px; }
+    .game-area.mode-1v1 { grid-template-columns: 1fr 1fr; }
 
-    .btn-primary:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px var(--accent-glow);
-    }
+    .roster-card { background: var(--card-bg); border-radius: 25px; padding: 30px; border: 1px solid var(--border); box-shadow: var(--card-shadow); }
+    .roster-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid var(--border); padding-bottom: 15px; }
+    .roster-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
 
-    .btn-secondary {
-        background: var(--card-bg);
-        color: var(--text);
-        border: 1px solid var(--border);
-    }
+    .slot { background: var(--bg); border-radius: 20px; padding: 20px; text-align: center; border: 1px solid var(--border); transition: 0.3s; position: relative; min-height: 160px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .slot:hover { transform: translateY(-5px); border-color: var(--accent); }
+    .slot-pos { font-size: 0.7rem; text-transform: uppercase; color: var(--text-muted); font-weight: 800; letter-spacing: 1px; margin-bottom: 10px; }
+    .slot-img { width: 60px; height: 60px; object-fit: contain; margin-bottom: 10px; opacity: 0.2; }
+    .slot-img.filled { opacity: 1; }
+    .slot-name { font-size: 0.85rem; font-weight: 700; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .slot-rating { font-size: 1.1rem; font-weight: 900; color: var(--accent); margin-top: 5px; }
+    .hidden-rating .slot-rating { filter: blur(8px); }
 
-    .btn-secondary:hover {
-        background: var(--border);
-    }
-
-    /* --- Generator Section --- */
-    .generator-box {
-        background: var(--card-bg);
-        border-radius: 24px;
-        padding: 60px;
-        text-align: center;
-        border: 1px solid var(--border);
-        margin-bottom: 40px;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .slot-display {
-        height: 200px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 30px;
-    }
-
-    .team-logo-large {
-        width: 180px;
-        height: 180px;
-        object-fit: contain;
-        transition: var(--transition);
-        filter: drop-shadow(0 0 0px transparent);
-    }
-
-    .team-logo-large.selected {
-        animation: teamPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        filter: drop-shadow(0 0 20px var(--accent));
-    }
-
-    .team-name-display {
-        font-size: 2.5rem;
-        font-weight: 800;
-        margin-top: 20px;
-        min-height: 3.5rem;
-    }
-
-    /* --- Mode Grid --- */
-    .app-grid {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 30px;
-    }
-
-    .app-grid.mode-1v1 {
-        grid-template-columns: 1fr 1fr;
-    }
-
-    .builder-column {
-        background: var(--card-bg);
-        border-radius: 24px;
-        padding: 30px;
-        border: 1px solid var(--border);
-    }
-
-    .section-title {
-        font-size: 1.2rem;
-        margin-bottom: 20px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    /* --- Roster Cards --- */
-    .roster-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-        gap: 15px;
-    }
-
-    .pos-card {
-        background: var(--bg);
-        padding: 20px;
-        border-radius: 16px;
-        border: 1px solid var(--border);
-        text-align: center;
-        transition: var(--transition);
-        cursor: pointer;
-        position: relative;
-    }
-
-    .pos-card:hover {
-        transform: translateY(-5px);
-        border-color: var(--accent);
-    }
-
-    .pos-label {
-        font-size: 0.75rem;
-        text-transform: uppercase;
-        color: var(--text-muted);
-        letter-spacing: 1px;
-        margin-bottom: 8px;
-    }
-
-    .pos-value {
-        font-weight: 700;
-        font-size: 1rem;
-    }
-
-    .pos-rating {
-        font-size: 0.8rem;
-        color: var(--success);
-        margin-top: 5px;
-    }
-
-    /* --- Win Simulation --- */
-    .sim-overlay {
-        margin-top: 40px;
-        text-align: center;
-    }
-
-    .prob-card {
-        background: var(--card-bg);
-        padding: 40px;
-        border-radius: 24px;
-        border: 1px solid var(--border);
-        display: inline-block;
-        min-width: 300px;
-    }
-
-    .progress-container {
-        width: 100%;
-        height: 12px;
-        background: var(--bg);
-        border-radius: 10px;
-        margin: 20px 0;
-        overflow: hidden;
-    }
-
-    .progress-bar {
-        height: 100%;
-        background: var(--accent);
-        width: 0%;
-        transition: width 1.5s cubic-bezier(0.65, 0, 0.35, 1);
-    }
-
-    /* --- Animations --- */
-    @keyframes teamPop {
-        0% { transform: scale(0.5); opacity: 0; }
-        100% { transform: scale(1); opacity: 1; }
-    }
-
-    @keyframes confetti {
-        0% { transform: translateY(0) rotate(0deg); opacity: 1; }
-        100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
-    }
-
-    .confetti {
-        position: fixed;
-        width: 10px;
-        height: 10px;
-        background: var(--accent);
-        top: -10px;
-        z-index: 999;
-        pointer-events: none;
-    }
-
-    /* --- Toggle Switch --- */
-    .switch-group {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        font-size: 0.85rem;
-    }
-
-    .switch {
-        position: relative;
-        display: inline-block;
-        width: 40px;
-        height: 20px;
-    }
-
-    .switch input { opacity: 0; width: 0; height: 0; }
-
-    .slider {
-        position: absolute;
-        cursor: pointer;
-        top: 0; left: 0; right: 0; bottom: 0;
-        background-color: var(--border);
-        transition: .4s;
-        border-radius: 20px;
-    }
-
-    .slider:before {
-        position: absolute;
-        content: "";
-        height: 14px;
-        width: 14px;
-        left: 3px;
-        bottom: 3px;
-        background-color: white;
-        transition: .4s;
-        border-radius: 50%;
-    }
-
-    input:checked + .slider { background-color: var(--accent); }
-    input:checked + .slider:before { transform: translateX(20px); }
+    /* --- Win Engine --- */
+    .engine-zone { margin-top: 50px; text-align: center; }
+    .result-box { background: var(--card-bg); padding: 40px; border-radius: 30px; display: inline-block; min-width: 400px; border: 1px solid var(--border); box-shadow: var(--card-shadow); }
+    .record-display { font-size: 4rem; font-weight: 900; margin: 10px 0; color: var(--success); }
+    
+    @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.05); } }
 
     .hidden { display: none !important; }
 
     @media (max-width: 768px) {
-        .app-grid.mode-1v1 { grid-template-columns: 1fr; }
-        .generator-box { padding: 30px; }
-        .team-name-display { font-size: 1.8rem; }
+        .main-title { font-size: 2.2rem; }
+        .game-area.mode-1v1 { grid-template-columns: 1fr; }
+        .roster-grid { grid-template-columns: repeat(2, 1fr); }
+        .result-box { min-width: 90%; }
     }
 </style>
 
 ```
 
 </head>
-<body>
+<body data-theme="dark">
 
 ```
 <div class="container">
     <header>
-        <div class="logo-area">
-            <h1>NFL DYNASTY</h1>
-        </div>
-        <div class="controls">
-            <button class="btn btn-secondary" onclick="toggleMode()" id="modeToggle">
-                <span>👥</span> 1v1 Mode
-            </button>
-            <button class="btn btn-secondary" onclick="toggleTheme()" id="themeBtn">
-                <span>🌙</span>
-            </button>
-        </div>
+        <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+        <h1 class="main-title">Dynasty Draft</h1>
+        <p class="sub-title">Build Your 17-0 NFL Team</p>
     </header>
 
-    <section class="generator-section">
-        <div class="generator-box">
-            <div class="slot-display" id="slotMachine">
-                <img src="[https://a.espncdn.com/i/teamlogos/nfl/500/nfl.png](https://a.espncdn.com/i/teamlogos/nfl/500/nfl.png)" alt="NFL" class="team-logo-large" id="mainLogo">
-                <div class="team-name-display" id="mainTeamName">Select Your Fate</div>
-            </div>
-            <button class="btn btn-primary" style="margin: 0 auto; padding: 16px 40px; font-size: 1.1rem;" onclick="generateTeam()" id="genBtn">
-                GENERATE TEAM
-            </button>
-            
-            <div style="margin-top: 25px; display: flex; justify-content: center; gap: 20px;">
-                <div class="switch-group">
-                    <label class="switch">
-                        <input type="checkbox" id="coachToggle" onchange="refreshRosters()">
-                        <span class="slider"></span>
-                    </label>
-                    <span>Add Coach</span>
-                </div>
-                <div class="switch-group">
-                    <label class="switch">
-                        <input type="checkbox" id="olineToggle" onchange="refreshRosters()">
-                        <span class="slider"></span>
-                    </label>
-                    <span>Add O-Line</span>
-                </div>
-            </div>
+    <div class="toggles-bar">
+        <div class="toggle-item">
+            <span>Solo Mode</span>
+            <input type="checkbox" id="modeSwitcher" onchange="toggleMode()">
+            <span>1v1 Duel</span>
         </div>
+        <div class="toggle-item">
+            <span>Fog of War</span>
+            <input type="checkbox" id="fogToggle" onchange="toggleFog()">
+        </div>
+    </div>
+
+    <section class="draft-zone">
+        <div class="spinner-display" id="spinner">
+            <img src="[https://a.espncdn.com/i/teamlogos/nfl/500/nfl.png](https://a.espncdn.com/i/teamlogos/nfl/500/nfl.png)" class="spinning-logo" id="draftLogo">
+            <div class="current-team-name" id="draftName">Spin to start drafting...</div>
+        </div>
+        
+        <button class="btn btn-primary" id="spinBtn" onclick="startSpin()">GENERATE TEAM</button>
+        
+        <div class="assign-grid" id="assignGrid">
+            </div>
+        <p id="turnIndicator" style="margin-top: 15px; font-weight: 600; color: var(--accent);"></p>
     </section>
 
-    <main class="app-grid" id="mainGrid">
-        <div class="builder-column" id="p1Column">
-            <div class="section-title">
-                <span id="p1Title">YOUR ROSTER</span>
-                <span id="p1Power" style="color: var(--accent); font-weight: 800;">OVR: --</span>
+    <div class="game-area" id="gameArea">
+        <div class="roster-card" id="p1Card">
+            <div class="roster-header">
+                <h3 id="p1Label">YOUR ROSTER</h3>
+                <div id="p1Ovr" style="font-weight: 800; font-size: 1.2rem;">OVR: --</div>
             </div>
-            <div class="roster-grid" id="p1Roster">
-                </div>
+            <div class="roster-grid" id="p1Roster"></div>
         </div>
 
-        <div class="builder-column hidden" id="p2Column">
-            <div class="section-title">
-                <span>PLAYER 2 ROSTER</span>
-                <span id="p2Power" style="color: var(--accent); font-weight: 800;">OVR: --</span>
+        <div class="roster-card hidden" id="p2Card">
+            <div class="roster-header">
+                <h3>OPPONENT ROSTER</h3>
+                <div id="p2Ovr" style="font-weight: 800; font-size: 1.2rem;">OVR: --</div>
             </div>
-            <div class="roster-grid" id="p2Roster">
-                </div>
-            <button class="btn btn-primary" style="width: 100%; margin-top: 20px;" onclick="generateTeam(true)">
-                GENERATE P2 TEAM
-            </button>
+            <div class="roster-grid" id="p2Roster"></div>
         </div>
-    </main>
+    </div>
 
-    <section class="sim-overlay">
-        <div class="prob-card">
-            <h3 id="simStatus">Ready to Simulate?</h3>
-            <div class="progress-container">
-                <div class="progress-bar" id="winBar"></div>
-            </div>
-            <div id="simResult" style="font-weight: 700; font-size: 1.2rem; margin-bottom: 20px;">
-                Hit simulate to see win probability
-            </div>
-            <button class="btn btn-primary" style="margin: 0 auto;" onclick="runSimulation()">
-                RUN WIN ENGINE
-            </button>
+    <section class="engine-zone">
+        <div class="result-box">
+            <h2 id="engineStatus">Ready to Simulate?</h2>
+            <div class="record-display" id="mainResult">--</div>
+            <div id="subResult" style="color: var(--text-muted); margin-bottom: 20px;">Complete your roster first</div>
+            <button class="btn btn-primary" onclick="runEngine()">RUN WIN ENGINE</button>
         </div>
     </section>
 </div>
 
 <script>
-    const nflTeams = [
-        { id: 'ari', name: 'Arizona Cardinals', color: '#97233F' },
-        { id: 'atl', name: 'Atlanta Falcons', color: '#A71930' },
-        { id: 'bal', name: 'Baltimore Ravens', color: '#241773' },
-        { id: 'buf', name: 'Buffalo Bills', color: '#00338D' },
-        { id: 'car', name: 'Carolina Panthers', color: '#0085CA' },
-        { id: 'chi', name: 'Chicago Bears', color: '#0B162A' },
-        { id: 'cin', name: 'Cincinnati Bengals', color: '#FB4F14' },
-        { id: 'cle', name: 'Cleveland Browns', color: '#311D00' },
-        { id: 'dal', name: 'Dallas Cowboys', color: '#003594' },
-        { id: 'den', name: 'Denver Broncos', color: '#FB4F14' },
-        { id: 'det', name: 'Detroit Lions', color: '#0076B6' },
-        { id: 'gb',  name: 'Green Bay Packers', color: '#203731' },
-        { id: 'hou', name: 'Houston Texans', color: '#03202F' },
-        { id: 'ind', name: 'Indianapolis Colts', color: '#002C5F' },
-        { id: 'jax', name: 'Jacksonville Jaguars', color: '#006778' },
-        { id: 'kc',  name: 'Kansas City Chiefs', color: '#E31837' },
-        { id: 'lv',  name: 'Las Vegas Raiders', color: '#000000' },
-        { id: 'lac', name: 'Los Angeles Chargers', color: '#0080C6' },
-        { id: 'lar', name: 'Los Angeles Rams', color: '#003594' },
-        { id: 'mia', name: 'Miami Dolphins', color: '#008E97' },
-        { id: 'min', name: 'Minnesota Vikings', color: '#4F2683' },
-        { id: 'ne',  name: 'New England Patriots', color: '#002244' },
-        { id: 'no',  name: 'New Orleans Saints', color: '#D3BC8D' },
-        { id: 'nyg', name: 'New York Giants', color: '#0B2265' },
-        { id: 'nyj', name: 'New York Jets', color: '#125740' },
-        { id: 'phi', name: 'Philadelphia Eagles', color: '#004C54' },
-        { id: 'pit', name: 'Pittsburgh Steelers', color: '#FFB612' },
-        { id: 'sf',  name: 'San Francisco 49ers', color: '#AA0000' },
-        { id: 'sea', name: 'Seattle Seahawks', color: '#002244' },
-        { id: 'tb',  name: 'Tampa Bay Buccaneers', color: '#D50A0A' },
-        { id: 'ten', name: 'Tennessee Titans', color: '#0C2340' },
-        { id: 'was', name: 'Washington Commanders', color: '#773141' }
+    const teams = [
+        { id: 'ari', name: 'Cardinals', ovr: 78, color: '#97233F' }, { id: 'atl', name: 'Falcons', ovr: 81, color: '#A71930' },
+        { id: 'bal', name: 'Ravens', ovr: 91, color: '#241773' }, { id: 'buf', name: 'Bills', ovr: 89, color: '#00338D' },
+        { id: 'car', name: 'Panthers', ovr: 74, color: '#0085CA' }, { id: 'chi', name: 'Bears', ovr: 80, color: '#0B162A' },
+        { id: 'cin', name: 'Bengals', ovr: 87, color: '#FB4F14' }, { id: 'cle', name: 'Browns', ovr: 85, color: '#311D00' },
+        { id: 'dal', name: 'Cowboys', ovr: 88, color: '#003594' }, { id: 'den', name: 'Broncos', ovr: 77, color: '#FB4F14' },
+        { id: 'det', name: 'Lions', ovr: 90, color: '#0076B6' }, { id: 'gb',  name: 'Packers', ovr: 84, color: '#203731' },
+        { id: 'hou', name: 'Texans', ovr: 86, color: '#03202F' }, { id: 'ind', name: 'Colts', ovr: 82, color: '#002C5F' },
+        { id: 'jax', name: 'Jaguars', ovr: 80, color: '#006778' }, { id: 'kc',  name: 'Chiefs', ovr: 94, color: '#E31837' },
+        { id: 'lv',  name: 'Raiders', ovr: 79, color: '#000000' }, { id: 'lac', name: 'Chargers', ovr: 83, color: '#0080C6' },
+        { id: 'lar', name: 'Rams', ovr: 84, color: '#003594' }, { id: 'mia', name: 'Dolphins', ovr: 86, color: '#008E97' },
+        { id: 'min', name: 'Vikings', ovr: 82, color: '#4F2683' }, { id: 'ne',  name: 'Patriots', ovr: 75, color: '#002244' },
+        { id: 'no',  name: 'Saints', ovr: 79, color: '#D3BC8D' }, { id: 'nyg', name: 'Giants', ovr: 76, color: '#0B2265' },
+        { id: 'nyj', name: 'Jets', ovr: 83, color: '#125740' }, { id: 'phi', name: 'Eagles', ovr: 89, color: '#004C54' },
+        { id: 'pit', name: 'Steelers', ovr: 84, color: '#FFB612' }, { id: 'sf',  name: '49ers', ovr: 93, color: '#AA0000' },
+        { id: 'sea', name: 'Seahawks', ovr: 81, color: '#002244' }, { id: 'tb',  name: 'Buccaneers', ovr: 82, color: '#D50A0A' },
+        { id: 'ten', name: 'Titans', ovr: 77, color: '#0C2340' }, { id: 'was', name: 'Commanders', ovr: 79, color: '#773141' }
     ];
 
+    const slots = ['QB', 'RB', 'WR1', 'WR2', 'TE', 'DEF'];
+    
     let state = {
         mode: 'solo',
         theme: 'dark',
-        p1: { team: null, roster: {} },
-        p2: { team: null, roster: {} },
-        isSpinning: false
+        fog: false,
+        currentPlayer: 1,
+        isSpinning: false,
+        lastSpunTeam: null,
+        p1: { roster: {} },
+        p2: { roster: {} }
     };
 
-    const positions = ['QB', 'WR1', 'WR2', 'TE', 'RB', 'DEF'];
-
-    // --- Core Functions ---
+    function init() {
+        renderRosters();
+        updateTurnText();
+    }
 
     function toggleTheme() {
         state.theme = state.theme === 'dark' ? 'light' : 'dark';
         document.body.setAttribute('data-theme', state.theme);
-        document.getElementById('themeBtn').innerHTML = state.theme === 'dark' ? '<span>🌙</span>' : '<span>☀️</span>';
+        document.querySelector('.theme-toggle').innerText = state.theme === 'dark' ? '🌙' : '☀️';
     }
 
     function toggleMode() {
-        state.mode = state.mode === 'solo' ? '1v1' : 'solo';
-        const grid = document.getElementById('mainGrid');
-        const p2Col = document.getElementById('p2Column');
-        const modeBtn = document.getElementById('modeToggle');
-
-        if (state.mode === '1v1') {
-            grid.classList.add('mode-1v1');
-            p2Col.classList.remove('hidden');
-            modeBtn.innerHTML = '<span>👤</span> Solo Mode';
-            document.getElementById('p1Title').innerText = "PLAYER 1 ROSTER";
-        } else {
-            grid.classList.remove('mode-1v1');
-            p2Col.classList.add('hidden');
-            modeBtn.innerHTML = '<span>👥</span> 1v1 Mode';
-            document.getElementById('p1Title').innerText = "YOUR ROSTER";
-        }
+        state.mode = document.getElementById('modeSwitcher').checked ? '1v1' : 'solo';
+        document.getElementById('p2Card').classList.toggle('hidden', state.mode === 'solo');
+        document.getElementById('gameArea').classList.toggle('mode-1v1', state.mode === '1v1');
+        document.getElementById('p1Label').innerText = state.mode === 'solo' ? "YOUR ROSTER" : "PLAYER 1 ROSTER";
+        resetGame();
     }
 
-    function generateTeam(isP2 = false) {
+    function toggleFog() {
+        state.fog = document.getElementById('fogToggle').checked;
+        document.getElementById('gameArea').classList.toggle('hidden-rating', state.fog);
+    }
+
+    function resetGame() {
+        state.p1.roster = {};
+        state.p2.roster = {};
+        state.currentPlayer = 1;
+        state.lastSpunTeam = null;
+        document.getElementById('mainResult').innerText = "--";
+        renderRosters();
+        updateTurnText();
+    }
+
+    function renderRosters() {
+        ['p1', 'p2'].forEach(p => {
+            const container = document.getElementById(`${p}Roster`);
+            container.innerHTML = '';
+            slots.forEach(s => {
+                const data = state[p].roster[s];
+                const div = document.createElement('div');
+                div.className = 'slot';
+                div.innerHTML = `
+                    <div class="slot-pos">${s}</div>
+                    <img src="[https://a.espncdn.com/i/teamlogos/nfl/500/$](https://a.espncdn.com/i/teamlogos/nfl/500/$){data ? data.id : 'nfl'}.png" class="slot-img ${data ? 'filled' : ''}">
+                    <div class="slot-name">${data ? data.name : 'Empty'}</div>
+                    <div class="slot-rating">${data ? data.ovr : ''}</div>
+                `;
+                container.appendChild(div);
+            });
+            calculateOvr(p);
+        });
+    }
+
+    function calculateOvr(player) {
+        const keys = Object.keys(state[player].roster);
+        if (keys.length === 0) return;
+        const sum = keys.reduce((acc, k) => acc + state[player].roster[k].ovr, 0);
+        const avg = Math.round(sum / slots.length); // Divide by total slots for progress feel
+        document.getElementById(`${player}Ovr`).innerText = `OVR: ${avg}`;
+        state[player].avg = avg;
+    }
+
+    function startSpin() {
         if (state.isSpinning) return;
         state.isSpinning = true;
+        document.getElementById('spinBtn').disabled = true;
+        document.getElementById('draftLogo').classList.add('active');
+        document.getElementById('assignGrid').classList.remove('visible');
 
-        const logoImg = isP2 ? document.createElement('img') : document.getElementById('mainLogo');
-        const nameDiv = isP2 ? document.createElement('div') : document.getElementById('mainTeamName');
-        
-        // Re-target for P2 if needed (for simplicity P2 just selects without full animation or we reuse main)
-        const targetLogo = document.getElementById('mainLogo');
-        const targetName = document.getElementById('mainTeamName');
-
-        let iterations = 0;
-        let maxIterations = 30;
-        let currentDelay = 50;
-
-        targetLogo.classList.remove('selected');
-
+        let count = 0;
+        let speed = 50;
         const spin = () => {
-            const randomTeam = nflTeams[Math.floor(Math.random() * nflTeams.length)];
-            targetLogo.src = `https://a.espncdn.com/i/teamlogos/nfl/500/${randomTeam.id}.png`;
-            targetName.innerText = randomTeam.name;
-            targetName.style.color = randomTeam.color;
-
-            iterations++;
-            if (iterations < maxIterations) {
-                currentDelay += iterations * 0.5;
-                setTimeout(spin, currentDelay);
+            const rand = teams[Math.floor(Math.random() * teams.length)];
+            document.getElementById('draftLogo').src = `https://a.espncdn.com/i/teamlogos/nfl/500/${rand.id}.png`;
+            document.getElementById('draftName').innerText = rand.name;
+            document.getElementById('draftName').style.color = rand.color;
+            
+            count++;
+            if (count < 25) {
+                setTimeout(spin, speed);
+                speed += count;
             } else {
-                finalizeTeam(randomTeam, isP2);
+                state.lastSpunTeam = rand;
+                state.isSpinning = false;
+                document.getElementById('draftLogo').classList.remove('active');
+                showAssignButtons();
             }
         };
-
         spin();
     }
 
-    function finalizeTeam(team, isP2) {
-        const player = isP2 ? 'p2' : 'p1';
-        state[player].team = team;
-        state.isSpinning = false;
+    function showAssignButtons() {
+        const grid = document.getElementById('assignGrid');
+        grid.innerHTML = '';
+        grid.classList.add('visible');
         
-        const targetLogo = document.getElementById('mainLogo');
-        targetLogo.classList.add('selected');
-        
-        createConfetti();
-        buildRoster(player);
-    }
-
-    function buildRoster(player) {
-        const container = document.getElementById(`${player}Roster`);
-        container.innerHTML = '';
-        
-        let currentPos = [...positions];
-        if (document.getElementById('coachToggle').checked) currentPos.push('COACH');
-        if (document.getElementById('olineToggle').checked) currentPos.push('O-LINE');
-
-        let totalPower = 0;
-
-        currentPos.forEach(pos => {
-            const rating = Math.floor(Math.random() * (99 - 75 + 1)) + 75;
-            state[player].roster[pos] = rating;
-            totalPower += rating;
-
-            const card = document.createElement('div');
-            card.className = 'pos-card';
-            card.innerHTML = `
-                <div class="pos-label">${pos}</div>
-                <div class="pos-value">STAR PLAYER</div>
-                <div class="pos-rating">★ ${rating}</div>
-            `;
-            container.appendChild(card);
-        });
-
-        const avg = Math.round(totalPower / currentPos.length);
-        document.getElementById(`${player}Power`).innerText = `OVR: ${avg}`;
-        state[player].overall = avg;
-    }
-
-    function refreshRosters() {
-        if (state.p1.team) buildRoster('p1');
-        if (state.p2.team) buildRoster('p2');
-    }
-
-    function runSimulation() {
-        if (!state.p1.team) return alert("Generate Player 1 Team first!");
-        if (state.mode === '1v1' && !state.p2.team) return alert("Generate Player 2 Team first!");
-
-        const bar = document.getElementById('winBar');
-        const res = document.getElementById('simResult');
-        const status = document.getElementById('simStatus');
-        
-        bar.style.width = '0%';
-        status.innerText = "Analyzing matchups...";
-
-        setTimeout(() => {
-            let winProb;
-            let winText;
-
-            if (state.mode === 'solo') {
-                // Against League Average (85)
-                winProb = Math.min(Math.max(state.p1.overall - 85 + 50, 5), 95);
-                const randomFactor = (Math.random() * 10) - 5;
-                winProb = Math.round(winProb + randomFactor);
-                winText = winProb > 50 ? `Victory Likely (${winProb}%)` : `Underdog Status (${winProb}%)`;
-            } else {
-                // P1 vs P2
-                const diff = state.p1.overall - state.p2.overall;
-                winProb = Math.min(Math.max(50 + (diff * 2), 5), 95);
-                const randomFactor = (Math.random() * 10) - 5;
-                winProb = Math.round(winProb + randomFactor);
-                winText = winProb > 50 ? `P1 is Favored (${winProb}%)` : `P2 is Favored (${100 - winProb}%)`;
+        const p = state.currentPlayer === 1 ? 'p1' : 'p2';
+        slots.forEach(s => {
+            if (!state[p].roster[s]) {
+                const b = document.createElement('button');
+                b.className = 'btn-assign';
+                b.innerText = `SET AS ${s}`;
+                b.onclick = () => assignToSlot(s);
+                grid.appendChild(b);
             }
-
-            bar.style.width = `${winProb}%`;
-            res.innerText = winText;
-            status.innerText = "Simulation Complete";
-            
-            if (winProb > 50) createConfetti();
-        }, 500);
-    }
-
-    function createConfetti() {
-        for (let i = 0; i < 50; i++) {
-            const c = document.createElement('div');
-            c.className = 'confetti';
-            c.style.left = Math.random() * 100 + 'vw';
-            c.style.backgroundColor = state.p1.team ? state.p1.team.color : 'var(--accent)';
-            c.style.animation = `confetti ${Math.random() * 2 + 1}s linear forwards`;
-            document.body.appendChild(c);
-            setTimeout(() => c.remove(), 3000);
+        });
+        
+        if (grid.children.length === 0) {
+            document.getElementById('draftName').innerText = "Roster Full!";
         }
     }
 
-    // Initialize empty state
-    window.onload = () => {
-        // Pre-warm UI
-    };
+    function assignToSlot(slot) {
+        const p = state.currentPlayer === 1 ? 'p1' : 'p2';
+        state[p].roster[slot] = { ...state.lastSpunTeam };
+        
+        document.getElementById('assignGrid').classList.remove('visible');
+        document.getElementById('spinBtn').disabled = false;
+        
+        if (state.mode === '1v1') {
+            state.currentPlayer = state.currentPlayer === 1 ? 2 : 1;
+        }
+        
+        renderRosters();
+        updateTurnText();
+        document.getElementById('draftName').innerText = "Team Locked!";
+    }
 
+    function updateTurnText() {
+        const el = document.getElementById('turnIndicator');
+        if (state.mode === 'solo') {
+            el.innerText = "";
+        } else {
+            el.innerText = `Current Turn: Player ${state.currentPlayer}`;
+        }
+    }
+
+    function runEngine() {
+        const p1Ready = Object.keys(state.p1.roster).length === slots.length;
+        if (!p1Ready) return alert("Fill Player 1 Roster first!");
+        
+        const main = document.getElementById('mainResult');
+        const sub = document.getElementById('subResult');
+        const status = document.getElementById('engineStatus');
+
+        status.innerText = "Simulating Season...";
+        main.innerText = "...";
+
+        setTimeout(() => {
+            if (state.mode === 'solo') {
+                let wins = 0;
+                const baseChance = (state.p1.avg - 65) / 40; 
+                for (let i = 0; i < 17; i++) {
+                    if (Math.random() < baseChance) wins++;
+                }
+                main.innerText = `${wins}-${17 - wins}`;
+                sub.innerText = wins === 17 ? "LEGENDARY 17-0 SEASON!" : "The grind continues.";
+            } else {
+                const p2Ready = Object.keys(state.p2.roster).length === slots.length;
+                if (!p2Ready) return alert("Fill Player 2 Roster first!");
+                
+                const diff = state.p1.avg - state.p2.avg;
+                const p1Prob = Math.round(Math.min(Math.max(50 + (diff * 3), 5), 95));
+                main.innerText = `${p1Prob}%`;
+                sub.innerText = p1Prob > 50 ? "Player 1 is the favorite" : "Player 2 has the edge";
+            }
+            status.innerText = "Simulation Complete";
+        }, 800);
+    }
+
+    init();
 </script>
 
 ```
