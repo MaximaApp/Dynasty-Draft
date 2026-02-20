@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Dynasty Draft | Madden 26 Edition</title>
+    <title>Dynasty Draft | Official Madden 26</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         :root {
             --bg: #0c0f14; --card: #161b22; --panel: #1c212c; --text: #f0f6fc;
@@ -16,150 +17,142 @@
             --border: #d0d7de; --glass: rgba(255, 255, 255, 0.8);
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', system-ui, -apple-system, sans-serif; transition: background 0.3s, color 0.3s; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', system-ui, sans-serif; }
         body { background-color: var(--bg); color: var(--text); overflow-x: hidden; }
 
         /* --- Animations --- */
-        @keyframes drift { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        @keyframes bounceIn { 0% { transform: scale(0.9); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes pop { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
         @keyframes pulse { 0% { box-shadow: 0 0 0 0 var(--accent-glow); } 70% { box-shadow: 0 0 0 15px rgba(0,0,0,0); } 100% { box-shadow: 0 0 0 0 rgba(0,0,0,0); } }
 
-        /* --- Screens --- */
-        .screen { display: none; min-height: 100vh; padding: 20px 20px 100px; animation: bounceIn 0.5s ease-out; }
+        .screen { display: none; min-height: 100vh; padding: 20px; animation: pop 0.4s ease-out; }
         .screen.active { display: flex; flex-direction: column; align-items: center; }
 
         /* --- Landing --- */
         #screen-landing { justify-content: center; text-align: center; }
-        .hero-title { font-size: 3.5rem; font-weight: 900; letter-spacing: -3px; margin-bottom: 10px; background: linear-gradient(to bottom, #fff, var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .hero-title { font-size: 4rem; font-weight: 900; letter-spacing: -3px; background: linear-gradient(to bottom, #fff, var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 20px; }
 
-        /* --- Header & Layout --- */
+        /* --- Main UI --- */
+        .header-top { width: 100%; max-width: 900px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .header-top h1 { font-size: 1.5rem; font-weight: 800; color: var(--accent); }
         .container { width: 100%; max-width: 900px; }
-        .glass-card { background: var(--glass); backdrop-filter: blur(10px); border: 1px solid var(--border); border-radius: 28px; padding: 25px; margin-bottom: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); width: 100%; }
+        .glass-card { background: var(--glass); backdrop-filter: blur(12px); border: 1px solid var(--border); border-radius: 28px; padding: 25px; margin-bottom: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
 
-        /* --- Draft Tab Specifics --- */
-        .spin-stage { display: flex; flex-direction: column; align-items: center; gap: 20px; padding: 40px 0; }
-        .wheel-box { position: relative; width: 160px; height: 160px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--panel); border: 2px solid var(--border); }
-        .wheel-box.spinning img { animation: drift 0.2s infinite linear; }
-        .wheel-box.winner { border-color: var(--accent); box-shadow: 0 0 40px var(--accent-glow); transform: scale(1.1); transition: 0.5s; }
-        .wheel-box img { width: 110px; height: 110px; object-fit: contain; }
+        /* --- Shuffle Stage --- */
+        .shuffle-box { height: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px; }
+        .logo-display { width: 120px; height: 120px; object-fit: contain; transition: transform 0.1s; }
+        .logo-display.bounce { transform: scale(1.2); }
 
         /* --- Roster Grid --- */
-        .roster-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 12px; width: 100%; margin-top: 20px; }
-        .slot { background: var(--panel); border: 1px solid var(--border); border-radius: 20px; padding: 15px; text-align: center; position: relative; cursor: pointer; }
+        .roster-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 12px; margin-top: 15px; }
+        .slot { background: var(--panel); border: 1px solid var(--border); border-radius: 20px; padding: 15px; text-align: center; cursor: pointer; position: relative; transition: 0.2s; }
         .slot.highlight { border-color: var(--accent); animation: pulse 1.5s infinite; }
-        .slot-ovr { font-weight: 900; color: var(--accent); font-size: 1.1rem; }
-        .slot-pos { font-size: 0.6rem; font-weight: 800; color: var(--text-dim); text-transform: uppercase; }
-        .slot-img { width: 40px; height: 40px; opacity: 0.1; filter: grayscale(1); margin: 8px 0; }
+        .slot-ovr { font-weight: 900; color: var(--accent); font-size: 1.2rem; }
+        .slot-img { width: 45px; height: 45px; opacity: 0.1; filter: grayscale(1); margin: 8px 0; transition: 0.3s; }
         .slot.filled .slot-img { opacity: 1; filter: grayscale(0); }
+        .slot-pos { font-size: 0.65rem; font-weight: 800; color: var(--text-dim); }
 
-        /* --- Settings/1v1 UI --- */
-        .setting-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
+        /* --- Calculate/Record Section --- */
+        .result-box { text-align: center; }
+        #calc-res { font-size: 3rem; font-weight: 900; color: var(--accent); transition: 0.5s; }
 
-        /* --- Nav --- */
-        .bottom-nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--glass); backdrop-filter: blur(20px); border: 1px solid var(--border); border-radius: 40px; display: flex; padding: 8px; gap: 10px; z-index: 1000; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
+        /* --- Navigation Bar --- */
+        .bottom-nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--glass); backdrop-filter: blur(20px); border: 1px solid var(--border); border-radius: 40px; display: flex; padding: 8px; gap: 5px; z-index: 1000; }
         .nav-btn { background: transparent; border: none; color: var(--text-dim); padding: 12px 24px; border-radius: 30px; font-weight: 700; cursor: pointer; font-size: 0.85rem; }
         .nav-btn.active { background: var(--accent); color: white; }
 
-        /* --- Fog/Blur Logic --- */
-        .fog-active .slot-ovr, .fog-active #calc-res { filter: blur(6px); pointer-events: none; }
-
-        .btn-main { background: var(--accent); color: white; border: none; padding: 16px 32px; border-radius: 18px; font-weight: 800; cursor: pointer; box-shadow: 0 10px 25px var(--accent-glow); }
+        .btn-main { background: var(--accent); color: white; border: none; padding: 18px 36px; border-radius: 20px; font-weight: 800; cursor: pointer; transition: 0.2s; box-shadow: 0 10px 20px var(--accent-glow); }
+        .btn-main:hover { transform: translateY(-3px); }
         .btn-main:active { transform: scale(0.95); }
         .hidden { display: none; }
+        .fog-active .slot-ovr, .fog-active #calc-res { filter: blur(8px); }
     </style>
 </head>
-<body id="body-tag">
+<body id="app-body">
 
     <div id="screen-landing" class="screen active">
         <h1 class="hero-title">DYNASTY</h1>
-        <p style="color: var(--text-dim); margin-bottom: 30px; font-weight: 500;">Madden 26 Official Ratings Edition</p>
-        <button class="btn-main" onclick="app.showScreen('draft')">ENTER DRAFT</button>
+        <p style="color: var(--text-dim); margin-bottom: 40px; font-weight: 500;">Madden 26 Official Ratings Edition</p>
+        <button class="btn-main" onclick="app.showScreen('draft')">PLAY NOW</button>
     </div>
 
     <div id="screen-draft" class="screen">
+        <div class="header-top">
+            <h1>Dynasty Draft</h1>
+            <div id="global-status" style="font-size: 0.8rem; font-weight: 700;">PLAYER 1 TURN</div>
+        </div>
+
         <div class="container">
-            <div class="glass-card spin-stage">
-                <div id="display-name" style="font-weight: 800; opacity: 0.5;">READY TO SPIN</div>
-                <div class="wheel-box" id="wheel">
-                    <img src="https://a.espncdn.com/i/teamlogos/nfl/500/nfl.png" id="wheel-img">
-                </div>
-                <button class="btn-main" id="spin-btn" onclick="app.spin()">SPIN TEAM</button>
-                <div id="draft-msg" style="height: 1rem; font-size: 0.8rem; color: var(--accent); font-weight: 700;"></div>
+            <div class="glass-card shuffle-box">
+                <div id="team-name" style="font-weight: 800; opacity: 0.5; font-size: 0.9rem;">SELECT A POSITION BELOW</div>
+                <img src="https://a.espncdn.com/i/teamlogos/nfl/500/nfl.png" class="logo-display" id="main-logo">
+                <button class="btn-main" id="spin-btn" onclick="app.shuffle()">SPIN TEAM</button>
             </div>
 
             <div class="glass-card">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <h3 id="p1-label">PLAYER 1 ROSTER</h3>
-                    <div id="p1-ovr-total" class="slot-ovr">OVR: --</div>
+                    <h3>PLAYER 1</h3>
+                    <div id="p1-total" class="slot-ovr">OVR: --</div>
                 </div>
                 <div class="roster-grid" id="p1-grid"></div>
             </div>
 
-            <div class="glass-card hidden" id="p2-container">
+            <div class="glass-card hidden" id="p2-card">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <h3>PLAYER 2 ROSTER</h3>
-                    <div id="p2-ovr-total" class="slot-ovr">OVR: --</div>
+                    <h3>PLAYER 2</h3>
+                    <div id="p2-total" class="slot-ovr">OVR: --</div>
                 </div>
                 <div class="roster-grid" id="p2-grid"></div>
             </div>
 
-            <div class="glass-card" style="text-align: center;">
-                <div id="calc-res" style="font-size: 2.5rem; font-weight: 900; color: var(--accent);">--</div>
-                <p id="calc-sub" style="color: var(--text-dim); margin-bottom: 15px;">Build team to calculate probability</p>
-                <button class="btn-main" style="background: #22c55e;" onclick="app.calculate()">SIMULATE SEASON</button>
-                <button class="btn-main" style="background: #6366f1; margin-left: 10px;" onclick="app.saveToVault()">SAVE TO VAULT</button>
+            <div class="glass-card result-box">
+                <div id="calc-res">--</div>
+                <div id="calc-label" style="color: var(--text-dim); margin-bottom: 20px;">Projected Win %</div>
+                <button class="btn-main" style="background: #22c55e; width: 100%;" onclick="app.calculate()">SIMULATE SEASON</button>
             </div>
-        </div>
-    </div>
-
-    <div id="screen-vault" class="screen">
-        <div class="container">
-            <h2 style="margin-bottom: 20px;">Saved Rosters</h2>
-            <div id="vault-list"></div>
         </div>
     </div>
 
     <div id="screen-settings" class="screen">
         <div class="container">
             <div class="glass-card">
-                <h2 style="margin-bottom: 20px;">Settings</h2>
-                <div class="setting-row"><span>1v1 Duel Mode</span><input type="checkbox" id="set-1v1" onchange="app.toggle1v1()"></div>
-                <div class="setting-row"><span>Hide Rankings (Blur)</span><input type="checkbox" id="set-fog" onchange="app.toggleFog()"></div>
-                <div class="setting-row"><span>Include Coach</span><input type="checkbox" id="set-coach" onchange="app.initGrids()"></div>
-                <div class="setting-row"><span>Include O-Line</span><input type="checkbox" id="set-oline" onchange="app.initGrids()"></div>
-                <div class="setting-row"><span>Light Mode</span><input type="checkbox" id="set-theme" onchange="app.toggleTheme()"></div>
-                <button class="btn-main" style="width: 100%; margin-top: 20px; background: #ef4444;" onclick="app.resetAll()">WIPE ALL DATA</button>
+                <h2 style="margin-bottom: 20px;">Modern UI Settings</h2>
+                <div style="display:flex; flex-direction:column; gap:15px;">
+                    <label style="display:flex; justify-content:space-between;">1v1 Duel Mode <input type="checkbox" id="set-1v1" onchange="app.toggle1v1()"></label>
+                    <hr style="border:0; border-top:1px solid var(--border);">
+                    <label style="display:flex; justify-content:space-between;">Hide Ratings (Fog) <input type="checkbox" id="set-fog" onchange="app.toggleFog()"></label>
+                    <label style="display:flex; justify-content:space-between;">Light Mode <input type="checkbox" id="set-theme" onchange="app.toggleTheme()"></label>
+                </div>
+                <button class="btn-main" style="background: #ef4444; width: 100%; margin-top: 30px;" onclick="location.reload()">WIPE DATA</button>
             </div>
         </div>
     </div>
 
     <nav class="bottom-nav">
         <button class="nav-btn active" onclick="app.showScreen('draft', this)">DRAFT</button>
-        <button class="nav-btn" onclick="app.showScreen('vault', this)">VAULT</button>
         <button class="nav-btn" onclick="app.showScreen('settings', this)">SETTINGS</button>
     </nav>
 
     <script>
-        // Official Madden 26 Ratings (Top Stars per team)
+        // OFFICIAL MADDEN 26 RATINGS
         const TEAMS = [
-            { id: 'bal', n: 'Ravens', qb: 99, rb: 98, wr: 88, te: 94, def: 95, c: 88, ol: 85 }, // Lamar 99
-            { id: 'phi', n: 'Eagles', qb: 87, rb: 99, wr: 93, te: 88, def: 88, c: 85, ol: 99 }, // Saquon 99
-            { id: 'cin', n: 'Bengals', qb: 97, rb: 82, wr: 99, te: 81, def: 84, c: 92, ol: 85 }, // Chase 99
-            { id: 'buf', n: 'Bills', qb: 99, rb: 89, wr: 84, te: 86, def: 88, c: 84, ol: 86 }, // Josh Allen 99
-            { id: 'min', n: 'Vikings', qb: 78, rb: 86, wr: 99, te: 89, def: 84, c: 82, ol: 85 }, // JJ 99
-            { id: 'kc', n: 'Chiefs', qb: 95, rb: 87, wr: 86, te: 93, def: 97, c: 99, ol: 94 },
-            { id: 'det', n: 'Lions', qb: 84, rb: 95, wr: 96, te: 91, def: 88, c: 85, ol: 96 },
-            { id: 'dal', n: 'Cowboys', qb: 90, rb: 79, wr: 95, te: 85, def: 98, c: 83, ol: 88 },
-            { id: 'sf', n: '49ers', qb: 88, rb: 94, wr: 92, te: 98, def: 97, c: 90, ol: 97 },
-            { id: 'cle', n: 'Browns', qb: 76, rb: 90, wr: 88, te: 89, def: 99, c: 82, ol: 85 } // Myles 99
+            { id: 'cin', n: 'Bengals', qb: 97, rb: 84, wr: 99, te: 82, def: 85 }, // Ja'Marr Chase 99
+            { id: 'phi', n: 'Eagles', qb: 88, rb: 99, wr: 93, te: 88, def: 88 }, // Saquon 99, Lane Johnson 99
+            { id: 'buf', n: 'Bills', qb: 99, rb: 87, wr: 82, te: 86, def: 88 }, // Josh Allen 99 (MVP)
+            { id: 'bal', n: 'Ravens', qb: 99, rb: 98, wr: 87, te: 91, def: 94 }, // Lamar 99
+            { id: 'min', n: 'Vikings', qb: 79, rb: 85, wr: 99, te: 89, def: 85 }, // JJ 99
+            { id: 'cle', n: 'Browns', qb: 76, rb: 91, wr: 88, te: 89, def: 99 }, // Myles Garrett 99
+            { id: 'kc', n: 'Chiefs', qb: 95, rb: 86, wr: 88, te: 93, def: 96 },
+            { id: 'sf', n: '49ers', qb: 88, rb: 94, wr: 92, te: 98, def: 95 },
+            { id: 'det', n: 'Lions', qb: 85, rb: 95, wr: 96, te: 91, def: 87 },
+            { id: 'dal', n: 'Cowboys', qb: 90, rb: 79, wr: 95, te: 85, def: 98 }
         ];
 
         const app = {
-            state: { p: 1, is1v1: false, spinning: false, currentPick: null, rosters: { 1: {}, 2: {} } },
+            state: { turn: 1, is1v1: false, spinning: false, pick: null, rosters: { 1: {}, 2: {} } },
 
             init() {
-                this.initGrids();
-                this.loadVault();
+                this.renderGrid(1);
+                this.renderGrid(2);
             },
 
             showScreen(id, btn) {
@@ -171,144 +164,116 @@
                 }
             },
 
-            initGrids() {
-                const positions = ['QB', 'RB', 'WR', 'TE', 'DEF'];
-                if (document.getElementById('set-coach').checked) positions.push('COACH');
-                if (document.getElementById('set-oline').checked) positions.push('OLINE');
-                this.state.positions = positions;
-
-                [1, 2].forEach(p => {
-                    const grid = document.getElementById(`p${p}-grid`);
-                    grid.innerHTML = '';
-                    positions.forEach(pos => {
-                        const div = document.createElement('div');
-                        div.className = 'slot';
-                        div.id = `slot-${p}-${pos}`;
-                        div.onclick = () => this.assign(p, pos);
-                        div.innerHTML = `<div class="slot-pos">${pos}</div><img src="https://a.espncdn.com/i/teamlogos/nfl/500/nfl.png" class="slot-img" id="img-${p}-${pos}"><div class="slot-ovr" id="ovr-${p}-${pos}">--</div>`;
-                        grid.appendChild(div);
-                    });
+            renderGrid(p) {
+                const grid = document.getElementById(`p${p}-grid`);
+                grid.innerHTML = '';
+                ['QB', 'RB', 'WR', 'TE', 'DEF'].forEach(pos => {
+                    const slot = document.createElement('div');
+                    slot.className = 'slot';
+                    slot.id = `slot-${p}-${pos}`;
+                    slot.innerHTML = `
+                        <div class="slot-pos">${pos}</div>
+                        <img src="https://a.espncdn.com/i/teamlogos/nfl/500/nfl.png" class="slot-img" id="img-${p}-${pos}">
+                        <div class="slot-ovr" id="ovr-${p}-${pos}">--</div>
+                    `;
+                    slot.onclick = () => this.assign(p, pos);
+                    grid.appendChild(slot);
                 });
             },
 
-            spin() {
-                if (this.state.spinning || this.state.currentPick) return;
+            shuffle() {
+                if(this.state.spinning || this.state.pick) return;
                 this.state.spinning = true;
-                const wheel = document.getElementById('wheel');
-                const img = document.getElementById('wheel-img');
-                const name = document.getElementById('display-name');
-                wheel.classList.add('spinning');
-                wheel.classList.remove('winner');
-
-                let count = 0;
-                const cycle = setInterval(() => {
+                const img = document.getElementById('main-logo');
+                const name = document.getElementById('team-name');
+                
+                let speed = 50;
+                let frames = 0;
+                
+                const cycle = () => {
                     const t = TEAMS[Math.floor(Math.random() * TEAMS.length)];
                     img.src = `https://a.espncdn.com/i/teamlogos/nfl/500/${t.id}.png`;
-                    name.innerText = t.n;
-                    count++;
-                    if (count > 20) {
-                        clearInterval(cycle);
-                        this.state.currentPick = TEAMS.find(x => x.n === name.innerText);
-                        wheel.classList.remove('spinning');
-                        wheel.classList.add('winner');
+                    name.innerText = t.n.toUpperCase();
+                    frames++;
+                    
+                    if (frames < 30) {
+                        setTimeout(cycle, speed);
+                        if(frames > 20) speed += 30; // Slow down
+                    } else {
+                        this.state.pick = t;
                         this.state.spinning = false;
-                        document.getElementById('draft-msg').innerText = `PLACE FOR PLAYER ${this.state.p}`;
-                        this.highlightEmpty();
+                        img.classList.add('bounce');
+                        setTimeout(() => img.classList.remove('bounce'), 300);
+                        this.highlight();
                     }
-                }, 100);
+                };
+                cycle();
             },
 
-            highlightEmpty() {
-                this.state.positions.forEach(pos => {
-                    const el = document.getElementById(`slot-${this.state.p}-${pos}`);
-                    if (!this.state.rosters[this.state.p][pos]) el.classList.add('highlight');
+            highlight() {
+                const p = this.state.turn;
+                ['QB', 'RB', 'WR', 'TE', 'DEF'].forEach(pos => {
+                    if(!this.state.rosters[p][pos]) document.getElementById(`slot-${p}-${pos}`).classList.add('highlight');
                 });
             },
 
             assign(p, pos) {
-                if (!this.state.currentPick || p !== this.state.p || this.state.rosters[p][pos]) return;
-                const t = this.state.currentPick;
-                const ratings = { 'QB': t.qb, 'RB': t.rb, 'WR': t.wr, 'TE': t.te, 'DEF': t.def, 'COACH': t.c, 'OLINE': t.ol };
+                if(!this.state.pick || p !== this.state.turn || this.state.rosters[p][pos]) return;
                 
+                const t = this.state.pick;
+                const ratings = { QB: t.qb, RB: t.rb, WR: t.wr, TE: t.te, DEF: t.def };
                 this.state.rosters[p][pos] = ratings[pos];
+                
                 const slot = document.getElementById(`slot-${p}-${pos}`);
                 slot.classList.add('filled');
                 slot.classList.remove('highlight');
                 document.getElementById(`img-${p}-${pos}`).src = `https://a.espncdn.com/i/teamlogos/nfl/500/${t.id}.png`;
                 document.getElementById(`ovr-${p}-${pos}`).innerText = ratings[pos];
-
-                this.state.currentPick = null;
-                document.getElementById('draft-msg').innerText = "";
-                document.querySelectorAll('.slot').forEach(s => s.classList.remove('highlight'));
-                this.updateOvr(p);
                 
-                if (this.state.is1v1) this.state.p = (this.state.p === 1 ? 2 : 1);
-            },
+                this.state.pick = null;
+                document.querySelectorAll('.slot').forEach(s => s.classList.remove('highlight'));
+                this.calcTotal(p);
 
-            updateOvr(p) {
-                const vals = Object.values(this.state.rosters[p]);
-                const avg = vals.length ? Math.round(vals.reduce((a,b)=>a+b,0) / this.state.positions.length) : 0;
-                document.getElementById(`p${p}-ovr-total`).innerText = `OVR: ${avg}`;
-                this.state.rosters[p].total = avg;
-            },
-
-            calculate() {
-                const r1 = this.state.rosters[1].total || 0;
-                if (!r1) return;
-                if (this.state.is1v1) {
-                    const r2 = this.state.rosters[2].total || 0;
-                    const prob = Math.round(50 + (r1 - r2) * 5);
-                    document.getElementById('calc-res').innerText = `${Math.max(5, Math.min(95, prob))}%`;
-                    document.getElementById('calc-sub').innerText = "Win probability for Player 1";
-                } else {
-                    const wins = Math.round((r1 - 70) / 1.8);
-                    document.getElementById('calc-res').innerText = `${Math.max(0, Math.min(17, wins))}-17`;
-                    document.getElementById('calc-sub').innerText = "Projected Season Record";
+                if(this.state.is1v1) {
+                    this.state.turn = (this.state.turn === 1 ? 2 : 1);
+                    document.getElementById('global-status').innerText = `PLAYER ${this.state.turn} TURN`;
                 }
             },
 
-            saveToVault() {
-                const vault = JSON.parse(localStorage.getItem('dynasty_vault') || '[]');
-                vault.push({ date: new Date().toLocaleDateString(), r1: this.state.rosters[1].total, r2: this.state.rosters[2].total });
-                localStorage.setItem('dynasty_vault', JSON.stringify(vault));
-                this.loadVault();
-                alert("Roster Saved!");
+            calcTotal(p) {
+                const vals = Object.values(this.state.rosters[p]);
+                const avg = vals.length ? Math.round(vals.reduce((a,b)=>a+b,0) / 5) : 0;
+                document.getElementById(`p${p}-total`).innerText = `OVR: ${avg}`;
+                this.state.rosters[p].avg = avg;
             },
 
-            loadVault() {
-                const vault = JSON.parse(localStorage.getItem('dynasty_vault') || '[]');
-                const list = document.getElementById('vault-list');
-                list.innerHTML = vault.reverse().map(entry => `
-                    <div class="glass-card">
-                        <div style="color:var(--accent); font-weight:800;">DRAFT: ${entry.date}</div>
-                        <div>P1 OVR: ${entry.r1} ${entry.r2 ? '| P2 OVR: ' + entry.r2 : ''}</div>
-                    </div>
-                `).join('');
+            calculate() {
+                const r1 = this.state.rosters[1].avg || 0;
+                if(!r1) return;
+
+                if(this.state.is1v1) {
+                    const r2 = this.state.rosters[2].avg || 0;
+                    const diff = r1 - r2;
+                    const prob = Math.min(99, Math.max(1, 50 + (diff * 4)));
+                    document.getElementById('calc-res').innerText = `Player 1 Wins by ${prob}%!`;
+                    if(prob > 50) this.celebrate();
+                } else {
+                    const record = Math.round((r1 - 70) / 1.7);
+                    document.getElementById('calc-res').innerText = `${Math.min(17, record)}-${17 - record}`;
+                    this.celebrate();
+                }
+            },
+
+            celebrate() {
+                confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#3b82f6', '#ffffff', '#ffd700'] });
             },
 
             toggle1v1() {
                 this.state.is1v1 = document.getElementById('set-1v1').checked;
-                document.getElementById('p2-container').classList.toggle('hidden', !this.state.is1v1);
-                this.resetCurrentDraft();
+                document.getElementById('p2-card').classList.toggle('hidden', !this.state.is1v1);
             },
-
-            toggleFog() {
-                document.getElementById('body-tag').classList.toggle('fog-active', document.getElementById('set-fog').checked);
-            },
-
-            toggleTheme() {
-                document.documentElement.setAttribute('data-theme', document.getElementById('set-theme').checked ? 'light' : 'dark');
-            },
-
-            resetCurrentDraft() {
-                this.state.rosters = { 1: {}, 2: {} };
-                this.state.p = 1;
-                this.initGrids();
-            },
-
-            resetAll() {
-                if(confirm("Wipe everything?")) { localStorage.clear(); location.reload(); }
-            }
+            toggleFog() { document.getElementById('app-body').classList.toggle('fog-active'); },
+            toggleTheme() { document.documentElement.setAttribute('data-theme', document.getElementById('set-theme').checked ? 'light' : 'dark'); }
         };
 
         app.init();
