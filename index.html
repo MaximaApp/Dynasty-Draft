@@ -11,116 +11,124 @@
             --bg: #05070a;
             --card: rgba(255, 255, 255, 0.05);
             --accent: #6366f1;
-            --accent-glow: rgba(99, 102, 241, 0.5);
+            --accent-glow: rgba(99, 102, 241, 0.6);
             --text: #ffffff;
             --text-dim: #94a3b8;
             --radius: 28px;
-            --shadow: 0 20px 50px rgba(0,0,0,0.5);
+            --shadow: 0 20px 50px rgba(0,0,0,0.6);
         }
 
         [data-theme="light"] {
-            --bg: #f8fafc;
-            --card: rgba(0, 0, 0, 0.03);
+            --bg: #f1f5f9;
+            --card: rgba(255, 255, 255, 0.8);
             --accent: #4f46e5;
-            --accent-glow: rgba(79, 70, 229, 0.3);
+            --accent-glow: rgba(79, 70, 229, 0.2);
             --text: #0f172a;
             --text-dim: #64748b;
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
         body { 
             margin: 0; background: var(--bg); color: var(--text); 
-            font-family: 'Plus Jakarta Sans', sans-serif; overflow: hidden;
-            height: 100vh; width: 100vw;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            height: 100vh; width: 100vw; overflow: hidden; /* App shell is fixed */
         }
 
         /* --- INTRO PAGE --- */
         #intro {
-            position: fixed; inset: 0; z-index: 1000; background: var(--bg);
+            position: fixed; inset: 0; z-index: 2000; background: var(--bg);
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            transition: transform 0.8s cubic-bezier(0.87, 0, 0.13, 1);
+            transition: transform 0.6s cubic-bezier(0.8, 0, 0.2, 1);
         }
         .intro-title { 
-            font-size: 3.5rem; font-weight: 800; text-align: center; margin-bottom: 2rem;
-            background: linear-gradient(to bottom, #fff, #6366f1);
+            font-size: 4rem; font-weight: 800; text-align: center; margin-bottom: 2rem;
+            background: linear-gradient(to bottom, #fff, var(--accent));
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            filter: drop-shadow(0 0 20px var(--accent-glow));
+            filter: drop-shadow(0 0 25px var(--accent-glow));
         }
 
         /* --- MAIN LAYOUT --- */
-        #app { height: 100%; display: flex; flex-direction: column; padding-bottom: 90px; }
+        #app { height: 100%; display: flex; flex-direction: column; }
         
-        .header { padding: 40px 20px 20px; text-align: center; }
-        .header h1 { font-size: 1.5rem; letter-spacing: 2px; text-transform: uppercase; opacity: 0.8; }
+        /* Scrollable content areas */
+        .view-container {
+            flex: 1; overflow-y: auto; padding-bottom: 120px; 
+            scroll-behavior: smooth; -webkit-overflow-scrolling: touch;
+        }
+
+        .header { padding: 40px 20px 10px; text-align: center; }
+        .header h1 { 
+            font-size: 1.2rem; letter-spacing: 4px; text-transform: uppercase; 
+            color: var(--accent); text-shadow: 0 0 10px var(--accent-glow);
+        }
 
         /* --- SPIN SECTION --- */
-        .spin-container {
-            flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
-            padding: 20px; gap: 20px;
-        }
+        .spin-section { padding: 20px; display: flex; flex-direction: column; align-items: center; gap: 20px; }
         .logo-ring {
-            width: 180px; height: 180px; border-radius: 50%;
-            background: var(--card); border: 2px solid rgba(255,255,255,0.1);
+            width: 160px; height: 160px; border-radius: 50%;
+            background: var(--card); border: 2px solid var(--accent);
             display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 0 40px var(--accent-glow); transition: 0.3s;
+            box-shadow: 0 0 30px var(--accent-glow);
         }
-        .logo-ring img { width: 70%; height: 70%; object-fit: contain; }
-        .team-label { font-size: 1.8rem; font-weight: 800; min-height: 40px; text-shadow: 0 0 15px var(--accent-glow); }
+        .logo-ring img { width: 75%; height: 75%; object-fit: contain; }
+        .team-label { font-size: 2rem; font-weight: 800; text-shadow: 0 0 15px var(--accent-glow); }
 
         /* --- DRAFT BOARD --- */
-        .board { 
-            display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; 
-            padding: 20px; max-width: 500px; margin: 0 auto; width: 100%;
-        }
+        .board-container { padding: 0 20px; margin-bottom: 30px; }
+        .player-tag { font-weight: 800; color: var(--accent); margin-bottom: 10px; display: block; }
+        .board { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        
         .slot {
-            background: var(--card); border-radius: 20px; padding: 15px 5px;
+            background: var(--card); border-radius: 20px; padding: 20px 5px;
             text-align: center; border: 1px solid rgba(255,255,255,0.05);
-            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: 0.3s ease;
         }
-        .slot.filled { border-color: var(--accent); background: rgba(99, 102, 241, 0.1); }
-        .slot-pos { font-size: 0.7rem; font-weight: 800; color: var(--text-dim); margin-bottom: 4px; }
-        .slot-ovr { font-size: 1.4rem; font-weight: 800; }
-        .blur-ovr { filter: blur(8px); opacity: 0.5; }
+        .slot.active-turn { border: 2px solid var(--accent); box-shadow: 0 0 15px var(--accent-glow); }
+        .slot.filled { background: rgba(99, 102, 241, 0.15); border-color: var(--accent); }
+        .slot-pos { font-size: 0.7rem; font-weight: 800; color: var(--text-dim); margin-bottom: 5px; }
+        .slot-ovr { font-size: 1.5rem; font-weight: 800; transition: 0.3s; }
+        .blur-ovr { filter: blur(10px); opacity: 0.3; }
 
-        /* --- TABS --- */
+        /* --- TAB BAR --- */
         .tab-bar {
-            position: fixed; bottom: 20px; left: 20px; right: 20px;
-            height: 70px; background: rgba(15, 23, 42, 0.8);
-            backdrop-filter: blur(20px); border-radius: 35px;
+            position: fixed; bottom: 30px; left: 20px; right: 20px;
+            height: 80px; background: rgba(10, 15, 25, 0.85);
+            backdrop-filter: blur(25px); border-radius: 40px;
             display: flex; align-items: center; justify-content: space-around;
             border: 1px solid rgba(255,255,255,0.1); box-shadow: var(--shadow);
-            z-index: 500;
+            z-index: 1000;
         }
-        .tab-item { color: var(--text-dim); font-size: 0.75rem; font-weight: 600; text-align: center; flex: 1; }
-        .tab-item.active { color: var(--accent); }
+        .tab-item { color: var(--text-dim); font-size: 0.7rem; font-weight: 800; text-align: center; flex: 1; transition: 0.3s; }
+        .tab-item.active { color: var(--accent); transform: translateY(-5px); }
 
         /* --- BUTTONS --- */
         .primary-btn {
-            background: var(--accent); color: #fff; border: none; padding: 16px 40px;
+            background: var(--accent); color: #fff; border: none; padding: 18px 45px;
             border-radius: 40px; font-weight: 800; font-size: 1.1rem;
-            box-shadow: 0 10px 30px var(--accent-glow); cursor: pointer;
+            box-shadow: 0 10px 30px var(--accent-glow); cursor: pointer; transition: 0.2s;
         }
-        .primary-btn:active { transform: scale(0.95); }
+        .primary-btn:active { transform: scale(0.92); opacity: 0.8; }
+        .primary-btn:disabled { background: var(--text-dim); box-shadow: none; opacity: 0.5; }
 
         /* --- MODAL --- */
         .modal {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.8);
-            backdrop-filter: blur(10px); z-index: 2000;
+            position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(12px); z-index: 3000;
             display: none; align-items: flex-end;
         }
         .modal.show { display: flex; }
         .modal-sheet {
             background: var(--bg); width: 100%; border-radius: 40px 40px 0 0;
-            padding: 30px 20px 50px; border-top: 1px solid var(--accent);
-            transform: translateY(100%); transition: transform 0.4s ease;
+            padding: 30px 20px 60px; border-top: 2px solid var(--accent);
+            transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.2, 1, 0.3, 1);
         }
         .modal.show .modal-sheet { transform: translateY(0); }
-        .choice-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 20px; }
+        .choice-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 25px; }
 
-        /* --- SETTINGS --- */
         .settings-row {
             display: flex; justify-content: space-between; align-items: center;
-            padding: 20px 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+            padding: 24px 0; border-bottom: 1px solid rgba(255,255,255,0.05);
         }
     </style>
 </head>
@@ -132,54 +140,59 @@
     </div>
 
     <div id="app">
-        <div id="view-draft" class="view">
+        <div id="view-draft" class="view-container">
             <div class="header">
-                <h1 id="view-title">Solo Season</h1>
+                <h1 id="mode-indicator">SOLO SEASON</h1>
             </div>
 
             <div class="spin-section">
-                <div class="spin-container">
-                    <div class="logo-ring" id="logo-ring">
-                        <img src="https://a.espncdn.com/i/teamlogos/nfl/500/nfl.png" id="spin-logo">
-                    </div>
-                    <div class="team-label" id="spin-label">Ready?</div>
-                    <button class="primary-btn" id="spin-btn" onclick="startSpin()">SPIN TEAM</button>
-                    <button class="primary-btn" id="sim-btn" onclick="simSeason()" style="display: none; background: #10b981;">SIM SEASON</button>
+                <div class="logo-ring">
+                    <img src="https://a.espncdn.com/i/teamlogos/nfl/500/nfl.png" id="spin-logo">
                 </div>
+                <div class="team-label" id="spin-label">READY?</div>
+                <button class="primary-btn" id="spin-btn" onclick="startSpin()">SPIN TEAM</button>
+                <div id="result-text" style="font-weight: 800; font-size: 1.2rem; text-align: center; margin-top: 10px;"></div>
             </div>
 
-            <div class="board" id="main-board">
-                </div>
+            <div class="board-container">
+                <span class="player-tag" id="p1-tag">YOUR ROSTER</span>
+                <div class="board" id="board-p1"></div>
+            </div>
+
+            <div class="board-container" id="container-p2" style="display: none;">
+                <span class="player-tag">PLAYER 2 ROSTER</span>
+                <div class="board" id="board-p2"></div>
+            </div>
         </div>
 
-        <div id="view-settings" class="view" style="display: none; padding: 40px 20px;">
-            <h2 style="font-size: 2rem; margin-bottom: 20px;">Settings</h2>
+        <div id="view-settings" class="view-container" style="display: none; padding: 40px 20px;">
+            <h2 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 30px; filter: drop-shadow(0 0 10px var(--accent-glow));">Settings</h2>
             <div class="settings-row">
                 <span>1v1 Battle Mode</span>
-                <input type="checkbox" id="check-1v1" onchange="toggleMode()">
+                <input type="checkbox" id="check-1v1" onchange="toggleMode()" style="width: 25px; height: 25px;">
             </div>
             <div class="settings-row">
                 <span>Hide Overalls</span>
-                <input type="checkbox" id="check-hide" checked onchange="toggleHide()">
+                <input type="checkbox" id="check-hide" checked onchange="toggleHide()" style="width: 25px; height: 25px;">
             </div>
             <div class="settings-row">
                 <span>Light Mode</span>
-                <input type="checkbox" id="check-theme" onchange="toggleTheme()">
+                <input type="checkbox" id="check-theme" onchange="toggleTheme()" style="width: 25px; height: 25px;">
             </div>
-            <br>
-            <button class="primary-btn" style="width: 100%; background: #ef4444;" onclick="resetAll()">RESET GAME</button>
+            <br><br>
+            <button class="primary-btn" style="width: 100%; background: #ef4444; box-shadow: 0 10px 20px rgba(239, 68, 68, 0.3);" onclick="resetAll()">RESET ALL DATA</button>
         </div>
     </div>
 
     <div class="tab-bar">
-        <div class="tab-item active" onclick="switchView('draft')">🏟️<br>Draft</div>
-        <div class="tab-item" onclick="switchView('settings')">⚙️<br>Settings</div>
-        <div class="tab-item" onclick="resetAll()">🔄<br>Reset</div>
+        <div class="tab-item active" id="tab-draft" onclick="switchView('draft')">🏟️<br>DRAFT</div>
+        <div class="tab-item" id="tab-settings" onclick="switchView('settings')">⚙️<br>SETTINGS</div>
+        <div class="tab-item" onclick="resetAll()">🔄<br>RESET</div>
     </div>
 
     <div class="modal" id="draft-modal">
         <div class="modal-sheet">
-            <h3 id="modal-title" style="text-align:center">Choose Position</h3>
+            <h3 id="modal-title" style="text-align:center; font-size: 1.5rem;">Draft Position</h3>
             <div class="choice-grid" id="choice-grid"></div>
         </div>
     </div>
@@ -201,54 +214,76 @@
 
     const positions = ['QB', 'RB', 'WR', 'WR', 'TE', 'DEF'];
     let state = {
-        roster: Array(6).fill(null),
+        p1: Array(6).fill(null),
+        p2: Array(6).fill(null),
+        currentPlayer: 1,
         is1v1: false,
         hideOvr: true,
-        isSpinning: false
+        isSpinning: false,
+        gameOver: false
     };
 
     function enterApp() {
         document.getElementById('intro').style.transform = 'translateY(-100%)';
-        renderBoard();
+        init();
     }
 
-    function renderBoard() {
-        const board = document.getElementById('main-board');
+    function init() {
+        renderBoard('p1');
+        renderBoard('p2');
+    }
+
+    function renderBoard(playerKey) {
+        const board = document.getElementById(`board-${playerKey}`);
         board.innerHTML = '';
-        state.roster.forEach((player, i) => {
+        const data = state[playerKey];
+
+        data.forEach((player, i) => {
             const div = document.createElement('div');
             div.className = `slot ${player ? 'filled' : ''}`;
-            const ovrClass = state.hideOvr && player ? 'blur-ovr' : '';
+            
+            // Highlight turn in 1v1
+            if(state.is1v1 && !state.gameOver && state.currentPlayer === (playerKey === 'p1' ? 1 : 2)) {
+                div.classList.add('active-turn');
+            }
+
+            const ovrVal = player ? player.ovr : '-';
+            const blurClass = (state.hideOvr && !state.gameOver && player) ? 'blur-ovr' : '';
+            
             div.innerHTML = `
                 <div class="slot-pos">${positions[i]}</div>
-                <div class="slot-ovr ${ovrClass}">${player ? player.ovr : '-'}</div>
+                <div class="slot-ovr ${blurClass}">${ovrVal}</div>
             `;
             board.appendChild(div);
         });
-        checkFull();
+        checkWinCondition();
     }
 
     function startSpin() {
-        if(state.isSpinning) return;
+        if(state.isSpinning || state.gameOver) return;
         state.isSpinning = true;
-        
-        let velocity = 100;
-        let deceleration = 1.05;
-        let currentIdx = 0;
+        document.getElementById('spin-btn').disabled = true;
+
+        let velocity = 50;
+        let deceleration = 1.06;
+        let spinCount = 0;
+        let maxSpins = 25 + Math.floor(Math.random() * 10);
 
         function tick() {
-            currentIdx = (currentIdx + 1) % teams.length;
-            const team = teams[currentIdx];
-            document.getElementById('spin-logo').src = `https://a.espncdn.com/i/teamlogos/nfl/500/${team.id}.png`;
-            document.getElementById('spin-label').innerText = team.name;
+            spinCount++;
+            // Randomly cycle through teams
+            const randomTeam = teams[Math.floor(Math.random() * teams.length)];
+            document.getElementById('spin-logo').src = `https://a.espncdn.com/i/teamlogos/nfl/500/${randomTeam.id}.png`;
+            document.getElementById('spin-label').innerText = randomTeam.name.toUpperCase();
             
             velocity *= deceleration;
-            
-            if (velocity > 600) {
+
+            if (spinCount >= maxSpins) {
                 state.isSpinning = false;
-                setTimeout(() => openDraft(team), 500);
+                document.getElementById('spin-btn').disabled = false;
+                setTimeout(() => openDraft(randomTeam), 400);
             } else {
-                setTimeout(tick, velocity / 10);
+                setTimeout(tick, velocity);
             }
         }
         tick();
@@ -259,65 +294,101 @@
         const grid = document.getElementById('choice-grid');
         grid.innerHTML = '';
         
-        // Show available slots
+        const activeRoster = state.currentPlayer === 1 ? state.p1 : state.p2;
+
         positions.forEach((pos, i) => {
-            if(!state.roster[i]) {
+            if(!activeRoster[i]) {
                 const btn = document.createElement('div');
                 btn.className = 'slot filled';
                 btn.style.padding = '20px';
-                btn.innerHTML = `<div class="slot-pos">DRAFT</div><div class="slot-ovr">${pos}</div>`;
+                btn.innerHTML = `<div class="slot-pos">PICK</div><div class="slot-ovr">${pos}</div>`;
                 btn.onclick = () => {
-                    const base = 80 + Math.floor(Math.random() * 15);
-                    state.roster[i] = { pos, ovr: base };
+                    const rating = 78 + Math.floor(Math.random() * 18); // Realistic range
+                    activeRoster[i] = { pos, ovr: rating };
+                    
+                    if(state.is1v1) {
+                        state.currentPlayer = state.currentPlayer === 1 ? 2 : 1;
+                    }
+                    
                     modal.classList.remove('show');
-                    renderBoard();
+                    renderBoard('p1');
+                    renderBoard('p2');
                 };
                 grid.appendChild(btn);
             }
         });
-
         modal.classList.add('show');
     }
 
-    function simSeason() {
-        state.hideOvr = false; // Reveal on sim
-        renderBoard();
-        
-        const total = state.roster.reduce((a, b) => a + b.ovr, 0) / 6;
-        const wins = Math.floor((total - 75) * 1.5);
-        const finalWins = Math.max(0, Math.min(17, wins));
-        
-        document.getElementById('spin-label').innerHTML = `RECORD: ${finalWins}-${17-finalWins}`;
-        confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+    function checkWinCondition() {
+        const p1Full = state.p1.every(p => p !== null);
+        const p2Full = state.p2.every(p => p !== null);
+
+        if(state.is1v1) {
+            if(p1Full && p2Full) finalize();
+        } else {
+            if(p1Full) finalize();
+        }
     }
 
-    function checkFull() {
-        const full = state.roster.every(p => p !== null);
-        document.getElementById('spin-btn').style.display = full ? 'none' : 'block';
-        document.getElementById('sim-btn').style.display = full ? 'block' : 'none';
+    function finalize() {
+        state.gameOver = true;
+        document.getElementById('spin-btn').style.display = 'none';
+        
+        const p1Score = state.p1.reduce((sum, p) => sum + p.ovr, 0);
+        const resEl = document.getElementById('result-text');
+
+        if(state.is1v1) {
+            const p2Score = state.p2.reduce((sum, p) => sum + p.ovr, 0);
+            const p1Prob = (Math.exp(0.1 * p1Score) / (Math.exp(0.1 * p1Score) + Math.exp(0.1 * p2Score))) * 100;
+            const p1Wins = p1Prob > 50;
+            resEl.innerHTML = `WIN PROBABILITY: ${p1Wins ? p1Prob.toFixed(1) : (100-p1Prob).toFixed(1)}%<br>${p1Wins ? 'PLAYER 1 WINS' : 'PLAYER 2 WINS'}`;
+        } else {
+            // Difficulty 17-0 math
+            const avg = p1Score / 6;
+            const winChance = Math.pow((avg - 70) / 30, 1.5); // Hard curves
+            const wins = Math.min(17, Math.max(0, Math.floor(winChance * 17 + (Math.random() * 2))));
+            resEl.innerHTML = `SEASON RECORD: ${wins} - ${17-wins}`;
+            if(wins === 17) confetti({ particleCount: 200, spread: 100 });
+        }
+        
+        renderBoard('p1');
+        renderBoard('p2');
+        confetti({ particleCount: 100, origin: { y: 0.7 } });
     }
 
     function switchView(view) {
         document.getElementById('view-draft').style.display = view === 'draft' ? 'block' : 'none';
         document.getElementById('view-settings').style.display = view === 'settings' ? 'block' : 'none';
-        
-        const tabs = document.querySelectorAll('.tab-item');
-        tabs[0].classList.toggle('active', view === 'draft');
-        tabs[1].classList.toggle('active', view === 'settings');
+        document.getElementById('tab-draft').classList.toggle('active', view === 'draft');
+        document.getElementById('tab-settings').classList.toggle('active', view === 'settings');
     }
 
-    function toggleHide() { state.hideOvr = document.getElementById('check-hide').checked; renderBoard(); }
-    function toggleTheme() { 
+    function toggleMode() {
+        state.is1v1 = document.getElementById('check-1v1').checked;
+        document.getElementById('container-p2').style.display = state.is1v1 ? 'block' : 'none';
+        document.getElementById('mode-indicator').innerText = state.is1v1 ? '1v1 BATTLE' : 'SOLO SEASON';
+        document.getElementById('p1-tag').innerText = state.is1v1 ? 'PLAYER 1 ROSTER' : 'YOUR ROSTER';
+        resetAll();
+    }
+
+    function toggleHide() { state.hideOvr = document.getElementById('check-hide').checked; renderBoard('p1'); renderBoard('p2'); }
+    
+    function toggleTheme() {
         const isLight = document.getElementById('check-theme').checked;
         document.documentElement.setAttribute('data-theme', isLight ? 'light' : 'dark');
     }
-    
+
     function resetAll() {
-        state.roster = Array(6).fill(null);
-        state.hideOvr = document.getElementById('check-hide').checked;
-        document.getElementById('spin-label').innerText = "Ready?";
-        document.getElementById('spin-logo').src = "https://a.espncdn.com/i/teamlogos/nfl/500/nfl.png";
-        renderBoard();
+        state.p1 = Array(6).fill(null);
+        state.p2 = Array(6).fill(null);
+        state.currentPlayer = 1;
+        state.gameOver = false;
+        document.getElementById('spin-btn').style.display = 'block';
+        document.getElementById('spin-label').innerText = 'READY?';
+        document.getElementById('result-text').innerText = '';
+        renderBoard('p1');
+        renderBoard('p2');
         switchView('draft');
     }
 </script>
