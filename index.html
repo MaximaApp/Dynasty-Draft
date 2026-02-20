@@ -1,398 +1,623 @@
 <!DOCTYPE html>
 
-<html lang="en" class="dark">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NFL Team Architect | Draft & Simulate</title>
-<script src="[https://cdn.tailwindcss.com](https://www.google.com/search?q=https://cdn.tailwindcss.com)"></script>
-<script src="[https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js](https://www.google.com/search?q=https://cdn.jsdelivr.net/npm/canvas-confetti%401.6.0/dist/confetti.browser.min.js)"></script>
-<link rel="preconnect" href="[https://fonts.googleapis.com](https://www.google.com/search?q=https://fonts.googleapis.com)">
-<link rel="preconnect" href="[https://fonts.gstatic.com](https://www.google.com/search?q=https://fonts.gstatic.com)" crossorigin>
-<link href="[https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap](https://www.google.com/search?q=https://fonts.googleapis.com/css2%3Ffamily%3DInter:wght%40300%3B400%3B600%3B800%26display%3Dswap)" rel="stylesheet">
+<title>NFL Dynasty Builder and Simulator</title>
 <style>
-body { font-family: 'Inter', sans-serif; transition: background-color 0.5s ease; }
-.slot-machine { transition: transform 0.1s cubic-bezier(0.45, 0.05, 0.55, 0.95); }
-.team-glow { filter: drop-shadow(0 0 15px rgba(59, 130, 246, 0.5)); animation: pulse-glow 2s infinite; }
-@keyframes pulse-glow { 0%, 100% { filter: drop-shadow(0 0 15px rgba(59, 130, 246, 0.5)); } 50% { filter: drop-shadow(0 0 30px rgba(59, 130, 246, 0.8)); } }
-.card-hover:hover { transform: translateY(-5px); transition: all 0.3s ease; }
-.hidden-section { display: none; opacity: 0; }
-.visible-section { display: block; opacity: 1; transition: opacity 0.5s ease-in; }
-</style>
-<script>
-tailwind.config = {
-darkMode: 'class',
-theme: {
-extend: {
-colors: {
-nflBlue: '#013369',
-nflRed: '#D50A0A',
+:root {
+--bg: #0f172a;
+--card-bg: #1e293b;
+--text: #f8fafc;
+--text-muted: #94a3b8;
+--accent: #3b82f6;
+--accent-glow: rgba(59, 130, 246, 0.5);
+--success: #22c55e;
+--transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+--border: rgba(255, 255, 255, 0.1);
 }
-}
-}
-}
-</script>
-</head>
-<body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white min-h-screen">
 
 ```
-<nav class="p-6 flex justify-between items-center max-w-7xl mx-auto">
-    <div class="flex items-center space-x-2">
-        <div class="w-10 h-10 bg-nflBlue rounded-lg flex items-center justify-center font-bold text-white text-xl">N</div>
-        <h1 class="text-2xl font-800 tracking-tighter uppercase">Team Architect</h1>
-    </div>
-    <div class="flex items-center space-x-4">
-        <button id="modeToggle" class="px-4 py-2 rounded-full border border-slate-300 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-800 transition">
-            <span class="dark:hidden">🌙 Dark Mode</span>
-            <span class="hidden dark:inline">☀️ Light Mode</span>
-        </button>
-    </div>
-</nav>
+    [data-theme="light"] {
+        --bg: #f1f5f9;
+        --card-bg: #ffffff;
+        --text: #0f172a;
+        --text-muted: #64748b;
+        --accent: #2563eb;
+        --accent-glow: rgba(37, 99, 235, 0.2);
+        --border: rgba(0, 0, 0, 0.05);
+    }
 
-<main class="max-w-7xl mx-auto px-6 py-8">
-    
-    <section id="modeSelection" class="text-center py-20">
-        <h2 class="text-5xl font-extrabold mb-6">Select Battle Mode</h2>
-        <div class="flex flex-col md:flex-row justify-center gap-8 mt-12">
-            <button onclick="initApp('solo')" class="group p-8 w-full md:w-80 bg-white dark:bg-slate-900 rounded-3xl border-2 border-transparent hover:border-blue-500 shadow-xl transition-all card-hover">
-                <div class="text-6xl mb-4">🏈</div>
-                <h3 class="text-2xl font-bold mb-2">Solo Draft</h3>
-                <p class="text-slate-500">Build your dream roster and simulate win probability.</p>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Inter', -apple-system, sans-serif;
+    }
+
+    body {
+        background-color: var(--bg);
+        color: var(--text);
+        transition: background-color 0.5s ease;
+        min-height: 100vh;
+        padding-bottom: 50px;
+        overflow-x: hidden;
+    }
+
+    /* --- UI Components --- */
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+
+    header {
+        padding: 40px 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .logo-area h1 {
+        font-size: 2rem;
+        font-weight: 800;
+        letter-spacing: -1px;
+        background: linear-gradient(to right, var(--accent), #818cf8);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .controls {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+    }
+
+    .btn {
+        padding: 12px 24px;
+        border-radius: 12px;
+        border: none;
+        cursor: pointer;
+        font-weight: 600;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.9rem;
+    }
+
+    .btn-primary {
+        background: var(--accent);
+        color: white;
+        box-shadow: 0 4px 15px var(--accent-glow);
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px var(--accent-glow);
+    }
+
+    .btn-secondary {
+        background: var(--card-bg);
+        color: var(--text);
+        border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+        background: var(--border);
+    }
+
+    /* --- Generator Section --- */
+    .generator-box {
+        background: var(--card-bg);
+        border-radius: 24px;
+        padding: 60px;
+        text-align: center;
+        border: 1px solid var(--border);
+        margin-bottom: 40px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .slot-display {
+        height: 200px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 30px;
+    }
+
+    .team-logo-large {
+        width: 180px;
+        height: 180px;
+        object-fit: contain;
+        transition: var(--transition);
+        filter: drop-shadow(0 0 0px transparent);
+    }
+
+    .team-logo-large.selected {
+        animation: teamPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        filter: drop-shadow(0 0 20px var(--accent));
+    }
+
+    .team-name-display {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-top: 20px;
+        min-height: 3.5rem;
+    }
+
+    /* --- Mode Grid --- */
+    .app-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+
+    .app-grid.mode-1v1 {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .builder-column {
+        background: var(--card-bg);
+        border-radius: 24px;
+        padding: 30px;
+        border: 1px solid var(--border);
+    }
+
+    .section-title {
+        font-size: 1.2rem;
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    /* --- Roster Cards --- */
+    .roster-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 15px;
+    }
+
+    .pos-card {
+        background: var(--bg);
+        padding: 20px;
+        border-radius: 16px;
+        border: 1px solid var(--border);
+        text-align: center;
+        transition: var(--transition);
+        cursor: pointer;
+        position: relative;
+    }
+
+    .pos-card:hover {
+        transform: translateY(-5px);
+        border-color: var(--accent);
+    }
+
+    .pos-label {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        letter-spacing: 1px;
+        margin-bottom: 8px;
+    }
+
+    .pos-value {
+        font-weight: 700;
+        font-size: 1rem;
+    }
+
+    .pos-rating {
+        font-size: 0.8rem;
+        color: var(--success);
+        margin-top: 5px;
+    }
+
+    /* --- Win Simulation --- */
+    .sim-overlay {
+        margin-top: 40px;
+        text-align: center;
+    }
+
+    .prob-card {
+        background: var(--card-bg);
+        padding: 40px;
+        border-radius: 24px;
+        border: 1px solid var(--border);
+        display: inline-block;
+        min-width: 300px;
+    }
+
+    .progress-container {
+        width: 100%;
+        height: 12px;
+        background: var(--bg);
+        border-radius: 10px;
+        margin: 20px 0;
+        overflow: hidden;
+    }
+
+    .progress-bar {
+        height: 100%;
+        background: var(--accent);
+        width: 0%;
+        transition: width 1.5s cubic-bezier(0.65, 0, 0.35, 1);
+    }
+
+    /* --- Animations --- */
+    @keyframes teamPop {
+        0% { transform: scale(0.5); opacity: 0; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+
+    @keyframes confetti {
+        0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+        100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+    }
+
+    .confetti {
+        position: fixed;
+        width: 10px;
+        height: 10px;
+        background: var(--accent);
+        top: -10px;
+        z-index: 999;
+        pointer-events: none;
+    }
+
+    /* --- Toggle Switch --- */
+    .switch-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 0.85rem;
+    }
+
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 40px;
+        height: 20px;
+    }
+
+    .switch input { opacity: 0; width: 0; height: 0; }
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background-color: var(--border);
+        transition: .4s;
+        border-radius: 20px;
+    }
+
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 14px;
+        width: 14px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+    }
+
+    input:checked + .slider { background-color: var(--accent); }
+    input:checked + .slider:before { transform: translateX(20px); }
+
+    .hidden { display: none !important; }
+
+    @media (max-width: 768px) {
+        .app-grid.mode-1v1 { grid-template-columns: 1fr; }
+        .generator-box { padding: 30px; }
+        .team-name-display { font-size: 1.8rem; }
+    }
+</style>
+
+```
+
+</head>
+<body>
+
+```
+<div class="container">
+    <header>
+        <div class="logo-area">
+            <h1>NFL DYNASTY</h1>
+        </div>
+        <div class="controls">
+            <button class="btn btn-secondary" onclick="toggleMode()" id="modeToggle">
+                <span>👥</span> 1v1 Mode
             </button>
-            <button onclick="initApp('1v1')" class="group p-8 w-full md:w-80 bg-white dark:bg-slate-900 rounded-3xl border-2 border-transparent hover:border-red-500 shadow-xl transition-all card-hover">
-                <div class="text-6xl mb-4">⚔️</div>
-                <h3 class="text-2xl font-bold mb-2">1v1 Versus</h3>
-                <p class="text-slate-500">Draft against a friend and see who builds the better squad.</p>
+            <button class="btn btn-secondary" onclick="toggleTheme()" id="themeBtn">
+                <span>🌙</span>
             </button>
         </div>
-    </section>
+    </header>
 
-    <section id="generatorSection" class="hidden-section text-center max-w-4xl mx-auto">
-        <h2 id="turnIndicator" class="text-3xl font-bold mb-8 text-blue-500">Player 1: Spin for your Team</h2>
-        
-        <div class="relative bg-white dark:bg-slate-900 p-12 rounded-[3rem] shadow-2xl border border-slate-200 dark:border-slate-800 mb-8 overflow-hidden">
-            <div id="slotDisplay" class="h-48 flex items-center justify-center">
-                <img id="activeLogo" src="[https://static.www.nfl.com/image/upload/v1554321393/league/nv9id998ib57dfocxfmo.svg](https://static.www.nfl.com/image/upload/v1554321393/league/nv9id998ib57dfocxfmo.svg)" class="h-40 w-40 object-contain transition-all" alt="NFL Logo">
+    <section class="generator-section">
+        <div class="generator-box">
+            <div class="slot-display" id="slotMachine">
+                <img src="[https://a.espncdn.com/i/teamlogos/nfl/500/nfl.png](https://a.espncdn.com/i/teamlogos/nfl/500/nfl.png)" alt="NFL" class="team-logo-large" id="mainLogo">
+                <div class="team-name-display" id="mainTeamName">Select Your Fate</div>
             </div>
-            <h3 id="activeTeamName" class="text-3xl font-black mt-4 uppercase tracking-widest h-10">Waiting...</h3>
-            <div id="glowRing" class="absolute inset-0 border-8 border-transparent rounded-[3rem] pointer-events-none"></div>
-        </div>
-
-        <button id="spinBtn" class="bg-blue-600 hover:bg-blue-700 text-white text-xl font-bold py-5 px-12 rounded-2xl shadow-lg shadow-blue-500/30 transition-all active:scale-95">
-            GENERATE TEAM
-        </button>
-    </section>
-
-    <section id="builderSection" class="hidden-section">
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12" id="rosterContainer">
-            <div id="roster1" class="space-y-6">
-                <div class="flex items-center space-x-4 mb-4">
-                    <img id="p1FinalLogo" src="" class="w-16 h-16 object-contain">
-                    <h3 id="p1FinalName" class="text-3xl font-black uppercase"></h3>
-                </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="slotsP1"></div>
-            </div>
-
-            <div id="roster2" class="space-y-6 hidden">
-                <div class="flex items-center space-x-4 mb-4">
-                    <img id="p2FinalLogo" src="" class="w-16 h-16 object-contain">
-                    <h3 id="p2FinalName" class="text-3xl font-black uppercase"></h3>
-                </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="slotsP2"></div>
-            </div>
-        </div>
-
-        <div class="mt-12 p-8 bg-slate-900/50 rounded-3xl border border-slate-800 flex flex-col md:flex-row items-center justify-between gap-6">
-            <div>
-                <h4 class="text-xl font-bold">Extra Staffing</h4>
-                <p class="text-slate-400">Toggle advanced metrics</p>
-            </div>
-            <div class="flex gap-4">
-                <label class="flex items-center space-x-2 cursor-pointer">
-                    <input type="checkbox" id="toggleCoach" class="w-5 h-5 accent-blue-500">
-                    <span>Head Coach</span>
-                </label>
-                <label class="flex items-center space-x-2 cursor-pointer">
-                    <input type="checkbox" id="toggleOLine" class="w-5 h-5 accent-blue-500">
-                    <span>Offensive Line</span>
-                </label>
-            </div>
-            <button id="simulateBtn" class="bg-emerald-600 hover:bg-emerald-500 text-white font-black px-10 py-4 rounded-xl shadow-xl shadow-emerald-500/20 transition-all">
-                SIMULATE VICTORY
+            <button class="btn btn-primary" style="margin: 0 auto; padding: 16px 40px; font-size: 1.1rem;" onclick="generateTeam()" id="genBtn">
+                GENERATE TEAM
             </button>
-        </div>
-    </section>
-
-    <div id="resultModal" class="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-6 hidden opacity-0 transition-opacity duration-500">
-        <div class="bg-slate-900 border-2 border-blue-500 w-full max-w-2xl rounded-[3rem] p-10 text-center relative">
-            <button onclick="closeModal()" class="absolute top-6 right-8 text-4xl text-slate-500 hover:text-white">&times;</button>
-            <h2 class="text-2xl font-bold text-blue-400 mb-2">SIMULATION COMPLETE</h2>
-            <div id="winnerName" class="text-6xl font-black mb-6 uppercase italic"></div>
             
-            <div class="space-y-6">
-                <div>
-                    <div class="flex justify-between mb-2 font-bold">
-                        <span>Win Probability</span>
-                        <span id="winProbText">0%</span>
-                    </div>
-                    <div class="w-full bg-slate-800 h-4 rounded-full overflow-hidden">
-                        <div id="winProbBar" class="h-full bg-blue-500 transition-all duration-1000 w-0"></div>
-                    </div>
+            <div style="margin-top: 25px; display: flex; justify-content: center; gap: 20px;">
+                <div class="switch-group">
+                    <label class="switch">
+                        <input type="checkbox" id="coachToggle" onchange="refreshRosters()">
+                        <span class="slider"></span>
+                    </label>
+                    <span>Add Coach</span>
                 </div>
-                <p id="confidenceLevel" class="text-slate-400 italic"></p>
+                <div class="switch-group">
+                    <label class="switch">
+                        <input type="checkbox" id="olineToggle" onchange="refreshRosters()">
+                        <span class="slider"></span>
+                    </label>
+                    <span>Add O-Line</span>
+                </div>
             </div>
-            
-            <button onclick="location.reload()" class="mt-10 text-slate-400 underline hover:text-white">Start New Season</button>
         </div>
-    </div>
-</main>
+    </section>
+
+    <main class="app-grid" id="mainGrid">
+        <div class="builder-column" id="p1Column">
+            <div class="section-title">
+                <span id="p1Title">YOUR ROSTER</span>
+                <span id="p1Power" style="color: var(--accent); font-weight: 800;">OVR: --</span>
+            </div>
+            <div class="roster-grid" id="p1Roster">
+                </div>
+        </div>
+
+        <div class="builder-column hidden" id="p2Column">
+            <div class="section-title">
+                <span>PLAYER 2 ROSTER</span>
+                <span id="p2Power" style="color: var(--accent); font-weight: 800;">OVR: --</span>
+            </div>
+            <div class="roster-grid" id="p2Roster">
+                </div>
+            <button class="btn btn-primary" style="width: 100%; margin-top: 20px;" onclick="generateTeam(true)">
+                GENERATE P2 TEAM
+            </button>
+        </div>
+    </main>
+
+    <section class="sim-overlay">
+        <div class="prob-card">
+            <h3 id="simStatus">Ready to Simulate?</h3>
+            <div class="progress-container">
+                <div class="progress-bar" id="winBar"></div>
+            </div>
+            <div id="simResult" style="font-weight: 700; font-size: 1.2rem; margin-bottom: 20px;">
+                Hit simulate to see win probability
+            </div>
+            <button class="btn btn-primary" style="margin: 0 auto;" onclick="runSimulation()">
+                RUN WIN ENGINE
+            </button>
+        </div>
+    </section>
+</div>
 
 <script>
-    /** TEAM DATA **/
     const nflTeams = [
-        { name: "Arizona Cardinals", logo: "[https://static.www.nfl.com/image/private/f_auto/league/u9oxen97zssu9z796c8q](https://static.www.nfl.com/image/private/f_auto/league/u9oxen97zssu9z796c8q)", rating: 72 },
-        { name: "Atlanta Falcons", logo: "[https://static.www.nfl.com/image/private/f_auto/league/ogv6789lc7btid7u27j6](https://static.www.nfl.com/image/private/f_auto/league/ogv6789lc7btid7u27j6)", rating: 78 },
-        { name: "Baltimore Ravens", logo: "[https://static.www.nfl.com/image/private/f_auto/league/on77un9mmopsayis469m](https://static.www.nfl.com/image/private/f_auto/league/on77un9mmopsayis469m)", rating: 91 },
-        { name: "Buffalo Bills", logo: "[https://static.www.nfl.com/image/private/f_auto/league/giphf62ppuz7pc3uov46](https://static.www.nfl.com/image/private/f_auto/league/giphf62ppuz7pc3uov46)", rating: 89 },
-        { name: "Carolina Panthers", logo: "[https://static.www.nfl.com/image/private/f_auto/league/p87p4686u7s978p3p9v9](https://static.www.nfl.com/image/private/f_auto/league/p87p4686u7s978p3p9v9)", rating: 68 },
-        { name: "Chicago Bears", logo: "[https://static.www.nfl.com/image/private/f_auto/league/ra6i7y009f3u693m0cl0](https://static.www.nfl.com/image/private/f_auto/league/ra6i7y009f3u693m0cl0)", rating: 75 },
-        { name: "Cincinnati Bengals", logo: "[https://static.www.nfl.com/image/private/f_auto/league/ok7t8t3un9nmqv9961u2](https://static.www.nfl.com/image/private/f_auto/league/ok7t8t3un9nmqv9961u2)", rating: 87 },
-        { name: "Cleveland Browns", logo: "[https://static.www.nfl.com/image/private/f_auto/league/grf6atq8unbt8gu6771e](https://static.www.nfl.com/image/private/f_auto/league/grf6atq8unbt8gu6771e)", rating: 83 },
-        { name: "Dallas Cowboys", logo: "[https://static.www.nfl.com/image/private/f_auto/league/qlm4p6hdmhieq885pndh](https://static.www.nfl.com/image/private/f_auto/league/qlm4p6hdmhieq885pndh)", rating: 88 },
-        { name: "Denver Broncos", logo: "[https://static.www.nfl.com/image/private/f_auto/league/p9p5l8m49zofw97m6m6l](https://static.www.nfl.com/image/private/f_auto/league/p9p5l8m49zofw97m6m6l)", rating: 74 },
-        { name: "Detroit Lions", logo: "[https://static.www.nfl.com/image/private/f_auto/league/idm9v_78351_49](https://static.www.nfl.com/image/private/f_auto/league/idm9v_78351_49)", rating: 90 },
-        { name: "Green Bay Packers", logo: "[https://static.www.nfl.com/image/private/f_auto/league/mptv8997u554625f4u6c](https://static.www.nfl.com/image/private/f_auto/league/mptv8997u554625f4u6c)", rating: 85 },
-        { name: "Houston Texans", logo: "[https://static.www.nfl.com/image/private/f_auto/league/tfu07at0tmo9798p3p9v](https://static.www.nfl.com/image/private/f_auto/league/tfu07at0tmo9798p3p9v)", rating: 84 },
-        { name: "Indianapolis Colts", logo: "[https://static.www.nfl.com/image/private/f_auto/league/f6at9q8unbt8gu6771e](https://static.www.nfl.com/image/private/f_auto/league/f6at9q8unbt8gu6771e)", rating: 79 },
-        { name: "Jacksonville Jaguars", logo: "[https://static.www.nfl.com/image/private/f_auto/league/vbi6atq8unbt8gu6771e](https://static.www.nfl.com/image/private/f_auto/league/vbi6atq8unbt8gu6771e)", rating: 77 },
-        { name: "Kansas City Chiefs", logo: "[https://static.www.nfl.com/image/private/f_auto/league/u9oxen97zssu9z796c8q](https://static.www.nfl.com/image/private/f_auto/league/u9oxen97zssu9z796c8q)", logo: "[https://static.www.nfl.com/image/private/f_auto/league/8796245f-004a-493e-862d-0219c63c5d63](https://static.www.nfl.com/image/private/f_auto/league/8796245f-004a-493e-862d-0219c63c5d63)", rating: 94 },
-        { name: "Las Vegas Raiders", logo: "[https://static.www.nfl.com/image/private/f_auto/league/gz_78351_44](https://static.www.nfl.com/image/private/f_auto/league/gz_78351_44)", rating: 76 },
-        { name: "Los Angeles Chargers", logo: "[https://static.www.nfl.com/image/private/f_auto/league/31445_45](https://static.www.nfl.com/image/private/f_auto/league/31445_45)", rating: 80 },
-        { name: "Los Angeles Rams", logo: "[https://static.www.nfl.com/image/private/f_auto/league/p57p4686u7s978p3p9v9](https://static.www.nfl.com/image/private/f_auto/league/p57p4686u7s978p3p9v9)", rating: 82 },
-        { name: "Miami Dolphins", logo: "[https://static.www.nfl.com/image/private/f_auto/league/mi9v_78351_38](https://static.www.nfl.com/image/private/f_auto/league/mi9v_78351_38)", rating: 86 },
-        { name: "Minnesota Vikings", logo: "[https://static.www.nfl.com/image/private/f_auto/league/31445_43](https://static.www.nfl.com/image/private/f_auto/league/31445_43)", rating: 81 },
-        { name: "New England Patriots", logo: "[https://static.www.nfl.com/image/private/f_auto/league/31445_40](https://static.www.nfl.com/image/private/f_auto/league/31445_40)", rating: 70 },
-        { name: "New Orleans Saints", logo: "[https://static.www.nfl.com/image/private/f_auto/league/grf6atq8unbt8gu6771e](https://static.www.nfl.com/image/private/f_auto/league/grf6atq8unbt8gu6771e)", logo: "[https://static.www.nfl.com/image/private/f_auto/league/31445_42](https://static.www.nfl.com/image/private/f_auto/league/31445_42)", rating: 76 },
-        { name: "New York Giants", logo: "[https://static.www.nfl.com/image/private/f_auto/league/31445_41](https://static.www.nfl.com/image/private/f_auto/league/31445_41)", rating: 71 },
-        { name: "New York Jets", logo: "[https://static.www.nfl.com/image/private/f_auto/league/j9oxen97zssu9z796c8q](https://static.www.nfl.com/image/private/f_auto/league/j9oxen97zssu9z796c8q)", logo: "[https://static.www.nfl.com/image/private/f_auto/league/78351_46](https://static.www.nfl.com/image/private/f_auto/league/78351_46)", rating: 79 },
-        { name: "Philadelphia Eagles", logo: "[https://static.www.nfl.com/image/private/f_auto/league/o9v6789lc7btid7u27j6](https://static.www.nfl.com/image/private/f_auto/league/o9v6789lc7btid7u27j6)", logo: "[https://static.www.nfl.com/image/private/f_auto/league/31445_47](https://static.www.nfl.com/image/private/f_auto/league/31445_47)", rating: 89 },
-        { name: "Pittsburgh Steelers", logo: "[https://static.www.nfl.com/image/private/f_auto/league/31445_48](https://static.www.nfl.com/image/private/f_auto/league/31445_48)", rating: 84 },
-        { name: "San Francisco 49ers", logo: "[https://static.www.nfl.com/image/private/f_auto/league/31445_50](https://static.www.nfl.com/image/private/f_auto/league/31445_50)", rating: 92 },
-        { name: "Seattle Seahawks", logo: "[https://static.www.nfl.com/image/private/f_auto/league/31445_51](https://static.www.nfl.com/image/private/f_auto/league/31445_51)", rating: 81 },
-        { name: "Tampa Bay Buccaneers", logo: "[https://static.www.nfl.com/image/private/f_auto/league/31445_52](https://static.www.nfl.com/image/private/f_auto/league/31445_52)", rating: 82 },
-        { name: "Tennessee Titans", logo: "[https://static.www.nfl.com/image/private/f_auto/league/31445_53](https://static.www.nfl.com/image/private/f_auto/league/31445_53)", rating: 73 },
-        { name: "Washington Commanders", logo: "[https://static.www.nfl.com/image/private/f_auto/league/p57p4686u7s978p3p9v9](https://static.www.nfl.com/image/private/f_auto/league/p57p4686u7s978p3p9v9)", logo: "[https://static.www.nfl.com/image/private/f_auto/league/54-commanders-new](https://static.www.nfl.com/image/private/f_auto/league/54-commanders-new)", rating: 75 }
+        { id: 'ari', name: 'Arizona Cardinals', color: '#97233F' },
+        { id: 'atl', name: 'Atlanta Falcons', color: '#A71930' },
+        { id: 'bal', name: 'Baltimore Ravens', color: '#241773' },
+        { id: 'buf', name: 'Buffalo Bills', color: '#00338D' },
+        { id: 'car', name: 'Carolina Panthers', color: '#0085CA' },
+        { id: 'chi', name: 'Chicago Bears', color: '#0B162A' },
+        { id: 'cin', name: 'Cincinnati Bengals', color: '#FB4F14' },
+        { id: 'cle', name: 'Cleveland Browns', color: '#311D00' },
+        { id: 'dal', name: 'Dallas Cowboys', color: '#003594' },
+        { id: 'den', name: 'Denver Broncos', color: '#FB4F14' },
+        { id: 'det', name: 'Detroit Lions', color: '#0076B6' },
+        { id: 'gb',  name: 'Green Bay Packers', color: '#203731' },
+        { id: 'hou', name: 'Houston Texans', color: '#03202F' },
+        { id: 'ind', name: 'Indianapolis Colts', color: '#002C5F' },
+        { id: 'jax', name: 'Jacksonville Jaguars', color: '#006778' },
+        { id: 'kc',  name: 'Kansas City Chiefs', color: '#E31837' },
+        { id: 'lv',  name: 'Las Vegas Raiders', color: '#000000' },
+        { id: 'lac', name: 'Los Angeles Chargers', color: '#0080C6' },
+        { id: 'lar', name: 'Los Angeles Rams', color: '#003594' },
+        { id: 'mia', name: 'Miami Dolphins', color: '#008E97' },
+        { id: 'min', name: 'Minnesota Vikings', color: '#4F2683' },
+        { id: 'ne',  name: 'New England Patriots', color: '#002244' },
+        { id: 'no',  name: 'New Orleans Saints', color: '#D3BC8D' },
+        { id: 'nyg', name: 'New York Giants', color: '#0B2265' },
+        { id: 'nyj', name: 'New York Jets', color: '#125740' },
+        { id: 'phi', name: 'Philadelphia Eagles', color: '#004C54' },
+        { id: 'pit', name: 'Pittsburgh Steelers', color: '#FFB612' },
+        { id: 'sf',  name: 'San Francisco 49ers', color: '#AA0000' },
+        { id: 'sea', name: 'Seattle Seahawks', color: '#002244' },
+        { id: 'tb',  name: 'Tampa Bay Buccaneers', color: '#D50A0A' },
+        { id: 'ten', name: 'Tennessee Titans', color: '#0C2340' },
+        { id: 'was', name: 'Washington Commanders', color: '#773141' }
     ];
 
-    const rosterSlots = [
-        { id: 'qb', label: 'Quarterback', emoji: '🎯' },
-        { id: 'wr1', label: 'Wide Receiver 1', emoji: '🏃' },
-        { id: 'wr2', label: 'Wide Receiver 2', emoji: '🏃' },
-        { id: 'te', label: 'Tight End', emoji: '🛡️' },
-        { id: 'rb', label: 'Running Back', emoji: '💨' },
-        { id: 'def', label: 'Defense/ST', emoji: '🚧' }
-    ];
+    let state = {
+        mode: 'solo',
+        theme: 'dark',
+        p1: { team: null, roster: {} },
+        p2: { team: null, roster: {} },
+        isSpinning: false
+    };
 
-    /** STATE MANAGEMENT **/
-    let appMode = 'solo'; 
-    let currentTurn = 1;
-    let p1Team = null;
-    let p2Team = null;
-    let rosters = { p1: {}, p2: {} };
+    const positions = ['QB', 'WR1', 'WR2', 'TE', 'RB', 'DEF'];
 
-    /** INITIALIZATION **/
-    function initApp(mode) {
-        appMode = mode;
-        document.getElementById('modeSelection').classList.add('hidden');
-        const genSection = document.getElementById('generatorSection');
-        genSection.classList.remove('hidden-section');
-        genSection.classList.add('visible-section');
-        
-        if (mode === 'solo') {
-            document.getElementById('turnIndicator').innerText = "Spin for your Team";
+    // --- Core Functions ---
+
+    function toggleTheme() {
+        state.theme = state.theme === 'dark' ? 'light' : 'dark';
+        document.body.setAttribute('data-theme', state.theme);
+        document.getElementById('themeBtn').innerHTML = state.theme === 'dark' ? '<span>🌙</span>' : '<span>☀️</span>';
+    }
+
+    function toggleMode() {
+        state.mode = state.mode === 'solo' ? '1v1' : 'solo';
+        const grid = document.getElementById('mainGrid');
+        const p2Col = document.getElementById('p2Column');
+        const modeBtn = document.getElementById('modeToggle');
+
+        if (state.mode === '1v1') {
+            grid.classList.add('mode-1v1');
+            p2Col.classList.remove('hidden');
+            modeBtn.innerHTML = '<span>👤</span> Solo Mode';
+            document.getElementById('p1Title').innerText = "PLAYER 1 ROSTER";
         } else {
-            document.getElementById('roster2').classList.remove('hidden');
+            grid.classList.remove('mode-1v1');
+            p2Col.classList.add('hidden');
+            modeBtn.innerHTML = '<span>👥</span> 1v1 Mode';
+            document.getElementById('p1Title').innerText = "YOUR ROSTER";
         }
     }
 
-    /** THEME TOGGLE **/
-    document.getElementById('modeToggle').addEventListener('click', () => {
-        document.documentElement.classList.toggle('dark');
-    });
+    function generateTeam(isP2 = false) {
+        if (state.isSpinning) return;
+        state.isSpinning = true;
 
-    /** SLOT MACHINE LOGIC **/
-    const spinBtn = document.getElementById('spinBtn');
-    const activeLogo = document.getElementById('activeLogo');
-    const activeTeamName = document.getElementById('activeTeamName');
-    const glowRing = document.getElementById('glowRing');
-
-    spinBtn.addEventListener('click', () => {
-        spinBtn.disabled = true;
-        spinBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        const logoImg = isP2 ? document.createElement('img') : document.getElementById('mainLogo');
+        const nameDiv = isP2 ? document.createElement('div') : document.getElementById('mainTeamName');
         
-        let duration = 3000;
-        let startTime = null;
-        let speed = 50;
+        // Re-target for P2 if needed (for simplicity P2 just selects without full animation or we reuse main)
+        const targetLogo = document.getElementById('mainLogo');
+        const targetName = document.getElementById('mainTeamName');
 
-        const animate = (timestamp) => {
-            if (!startTime) startTime = timestamp;
-            let progress = timestamp - startTime;
+        let iterations = 0;
+        let maxIterations = 30;
+        let currentDelay = 50;
 
-            // Cycle teams
-            const randomIndex = Math.floor(Math.random() * nflTeams.length);
-            activeLogo.src = nflTeams[randomIndex].logo;
-            activeTeamName.innerText = nflTeams[randomIndex].name;
+        targetLogo.classList.remove('selected');
 
-            if (progress < duration) {
-                // Gradual slowdown effect
-                let remaining = duration - progress;
-                let delay = Math.max(50, 300 - (remaining / 10));
-                setTimeout(() => requestAnimationFrame(animate), delay);
+        const spin = () => {
+            const randomTeam = nflTeams[Math.floor(Math.random() * nflTeams.length)];
+            targetLogo.src = `https://a.espncdn.com/i/teamlogos/nfl/500/${randomTeam.id}.png`;
+            targetName.innerText = randomTeam.name;
+            targetName.style.color = randomTeam.color;
+
+            iterations++;
+            if (iterations < maxIterations) {
+                currentDelay += iterations * 0.5;
+                setTimeout(spin, currentDelay);
             } else {
-                finalizeSelection(nflTeams[randomIndex]);
+                finalizeTeam(randomTeam, isP2);
             }
         };
 
-        requestAnimationFrame(animate);
-    });
+        spin();
+    }
 
-    function finalizeSelection(team) {
-        // Glow Effect
-        glowRing.style.borderColor = "#3b82f6";
-        glowRing.classList.add('team-glow');
-        activeLogo.classList.add('scale-125');
+    function finalizeTeam(team, isP2) {
+        const player = isP2 ? 'p2' : 'p1';
+        state[player].team = team;
+        state.isSpinning = false;
         
-        confetti({
-            particleCount: 100,
-            spread: 70,
-            origin: { y: 0.6 }
+        const targetLogo = document.getElementById('mainLogo');
+        targetLogo.classList.add('selected');
+        
+        createConfetti();
+        buildRoster(player);
+    }
+
+    function buildRoster(player) {
+        const container = document.getElementById(`${player}Roster`);
+        container.innerHTML = '';
+        
+        let currentPos = [...positions];
+        if (document.getElementById('coachToggle').checked) currentPos.push('COACH');
+        if (document.getElementById('olineToggle').checked) currentPos.push('O-LINE');
+
+        let totalPower = 0;
+
+        currentPos.forEach(pos => {
+            const rating = Math.floor(Math.random() * (99 - 75 + 1)) + 75;
+            state[player].roster[pos] = rating;
+            totalPower += rating;
+
+            const card = document.createElement('div');
+            card.className = 'pos-card';
+            card.innerHTML = `
+                <div class="pos-label">${pos}</div>
+                <div class="pos-value">STAR PLAYER</div>
+                <div class="pos-rating">★ ${rating}</div>
+            `;
+            container.appendChild(card);
         });
+
+        const avg = Math.round(totalPower / currentPos.length);
+        document.getElementById(`${player}Power`).innerText = `OVR: ${avg}`;
+        state[player].overall = avg;
+    }
+
+    function refreshRosters() {
+        if (state.p1.team) buildRoster('p1');
+        if (state.p2.team) buildRoster('p2');
+    }
+
+    function runSimulation() {
+        if (!state.p1.team) return alert("Generate Player 1 Team first!");
+        if (state.mode === '1v1' && !state.p2.team) return alert("Generate Player 2 Team first!");
+
+        const bar = document.getElementById('winBar');
+        const res = document.getElementById('simResult');
+        const status = document.getElementById('simStatus');
+        
+        bar.style.width = '0%';
+        status.innerText = "Analyzing matchups...";
 
         setTimeout(() => {
-            if (appMode === '1v1' && currentTurn === 1) {
-                p1Team = team;
-                currentTurn = 2;
-                resetForNextPlayer();
-            } else if (appMode === '1v1' && currentTurn === 2) {
-                p2Team = team;
-                transitionToBuilder();
+            let winProb;
+            let winText;
+
+            if (state.mode === 'solo') {
+                // Against League Average (85)
+                winProb = Math.min(Math.max(state.p1.overall - 85 + 50, 5), 95);
+                const randomFactor = (Math.random() * 10) - 5;
+                winProb = Math.round(winProb + randomFactor);
+                winText = winProb > 50 ? `Victory Likely (${winProb}%)` : `Underdog Status (${winProb}%)`;
             } else {
-                p1Team = team;
-                transitionToBuilder();
+                // P1 vs P2
+                const diff = state.p1.overall - state.p2.overall;
+                winProb = Math.min(Math.max(50 + (diff * 2), 5), 95);
+                const randomFactor = (Math.random() * 10) - 5;
+                winProb = Math.round(winProb + randomFactor);
+                winText = winProb > 50 ? `P1 is Favored (${winProb}%)` : `P2 is Favored (${100 - winProb}%)`;
             }
-        }, 1500);
-    }
 
-    function resetForNextPlayer() {
-        glowRing.classList.remove('team-glow');
-        activeLogo.classList.remove('scale-125');
-        glowRing.style.borderColor = "transparent";
-        document.getElementById('turnIndicator').innerText = "Player 2: Spin for your Team";
-        document.getElementById('turnIndicator').classList.replace('text-blue-500', 'text-red-500');
-        spinBtn.disabled = false;
-        spinBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-        activeTeamName.innerText = "Waiting...";
-        activeLogo.src = "[https://static.www.nfl.com/image/upload/v1554321393/league/nv9id998ib57dfocxfmo.svg](https://static.www.nfl.com/image/upload/v1554321393/league/nv9id998ib57dfocxfmo.svg)";
-    }
-
-    /** BUILDER LOGIC **/
-    function transitionToBuilder() {
-        document.getElementById('generatorSection').classList.add('hidden');
-        const builder = document.getElementById('builderSection');
-        builder.classList.remove('hidden-section');
-        builder.classList.add('visible-section');
-
-        // Setup UI
-        document.getElementById('p1FinalLogo').src = p1Team.logo;
-        document.getElementById('p1FinalName').innerText = p1Team.name;
-        setupSlots('slotsP1', 'p1');
-
-        if (appMode === '1v1') {
-            document.getElementById('p2FinalLogo').src = p2Team.logo;
-            document.getElementById('p2FinalName').innerText = p2Team.name;
-            setupSlots('slotsP2', 'p2');
-        }
-    }
-
-    function setupSlots(containerId, playerKey) {
-        const container = document.getElementById(containerId);
-        rosterSlots.forEach(slot => {
-            const div = document.createElement('div');
-            div.className = "p-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 card-hover flex flex-col items-center justify-center space-y-2 cursor-pointer";
-            div.innerHTML = `
-                <span class="text-2xl">${slot.emoji}</span>
-                <span class="text-xs font-bold uppercase text-slate-500">${slot.label}</span>
-                <select onchange="updateState('${playerKey}', '${slot.id}', this.value)" class="bg-transparent border-none text-center font-bold w-full focus:ring-0">
-                    <option value="0">Select Talent</option>
-                    <option value="95">All-Pro (95)</option>
-                    <option value="85">Starter (85)</option>
-                    <option value="75">Rookie (75)</option>
-                    <option value="60">Backup (60)</option>
-                </select>
-            `;
-            container.appendChild(div);
-        });
-    }
-
-    function updateState(player, slot, val) {
-        rosters[player][slot] = parseInt(val);
-    }
-
-    /** SIMULATION ENGINE **/
-    document.getElementById('simulateBtn').addEventListener('click', () => {
-        const getScore = (player) => {
-            let base = player === 'p1' ? p1Team.rating : (p2Team ? p2Team.rating : 50);
-            let rosterSum = Object.values(rosters[player]).reduce((a, b) => a + b, 0);
-            let count = Object.values(rosters[player]).length || 1;
+            bar.style.width = `${winProb}%`;
+            res.innerText = winText;
+            status.innerText = "Simulation Complete";
             
-            // Extra modifiers
-            if(document.getElementById('toggleCoach').checked) base += 5;
-            if(document.getElementById('toggleOLine').checked) base += 3;
+            if (winProb > 50) createConfetti();
+        }, 500);
+    }
 
-            return (base * 0.4) + ((rosterSum / count) * 0.6) + (Math.random() * 10);
-        };
-
-        const score1 = getScore('p1');
-        const score2 = appMode === '1v1' ? getScore('p2') : (75 + Math.random() * 20); // CPU is average-strong
-
-        const total = score1 + score2;
-        const prob1 = Math.round((score1 / total) * 100);
-        
-        showResults(prob1, score1 > score2);
-    });
-
-    function showResults(prob, p1Wins) {
-        const modal = document.getElementById('resultModal');
-        const winnerName = document.getElementById('winnerName');
-        const probBar = document.getElementById('winProbBar');
-        const probText = document.getElementById('winProbText');
-        const confText = document.getElementById('confidenceLevel');
-
-        modal.classList.remove('hidden');
-        setTimeout(() => modal.classList.add('opacity-100'), 10);
-
-        let displayProb = p1Wins ? prob : (100 - prob);
-        let winner = p1Wins ? p1Team.name : (appMode === '1v1' ? p2Team.name : "CPU Rival");
-
-        winnerName.innerText = winner + " WINS!";
-        probText.innerText = displayProb + "%";
-        probBar.style.width = displayProb + "%";
-        probBar.className = p1Wins ? "h-full bg-blue-500" : "h-full bg-red-500";
-
-        if (displayProb > 80) confText.innerText = "Confidence: Absolute Dominance";
-        else if (displayProb > 60) confText.innerText = "Confidence: Comfortable Lead";
-        else confText.innerText = "Confidence: Gritty Victory";
-
-        if(p1Wins) {
-            confetti({ particleCount: 150, spread: 100, origin: { y: 0.7 } });
+    function createConfetti() {
+        for (let i = 0; i < 50; i++) {
+            const c = document.createElement('div');
+            c.className = 'confetti';
+            c.style.left = Math.random() * 100 + 'vw';
+            c.style.backgroundColor = state.p1.team ? state.p1.team.color : 'var(--accent)';
+            c.style.animation = `confetti ${Math.random() * 2 + 1}s linear forwards`;
+            document.body.appendChild(c);
+            setTimeout(() => c.remove(), 3000);
         }
     }
 
-    function closeModal() {
-        const modal = document.getElementById('resultModal');
-        modal.classList.remove('opacity-100');
-        setTimeout(() => modal.classList.add('hidden'), 500);
-    }
+    // Initialize empty state
+    window.onload = () => {
+        // Pre-warm UI
+    };
+
 </script>
 
 ```
