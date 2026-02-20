@@ -3,253 +3,315 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Dynasty Draft Pro</title>
+    <title>Dynasty Draft | Madden 26 Edition</title>
     <style>
         :root {
-            --bg: #0d1117;
-            --card: rgba(22, 27, 34, 0.8);
-            --panel: #161b22;
-            --text: #f0f6fc;
-            --text-dim: #8b949e;
-            --accent: #007aff;
-            --accent-glow: rgba(0, 122, 255, 0.6);
-            --border: rgba(48, 54, 61, 0.8);
-            --nav: rgba(22, 27, 34, 0.95);
+            --bg: #0c0f14; --card: #161b22; --panel: #1c212c; --text: #f0f6fc;
+            --text-dim: #8b949e; --accent: #3b82f6; --accent-glow: rgba(59, 130, 246, 0.4);
+            --border: #30363d; --glass: rgba(22, 27, 34, 0.8);
         }
-
         [data-theme="light"] {
-            --bg: #f8f9fa;
-            --card: rgba(255, 255, 255, 0.9);
-            --panel: #ffffff;
-            --text: #1f2328;
-            --text-dim: #636c76;
-            --accent: #007aff;
-            --accent-glow: rgba(0, 122, 255, 0.2);
-            --border: #d0d7de;
-            --nav: rgba(255, 255, 255, 0.9);
+            --bg: #f6f8fa; --card: #ffffff; --panel: #f1f5f9; --text: #1f2328;
+            --text-dim: #636c76; --accent: #0969da; --accent-glow: rgba(9, 105, 218, 0.2);
+            --border: #d0d7de; --glass: rgba(255, 255, 255, 0.8);
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        body { background: var(--bg); color: var(--text); overflow-x: hidden; min-height: 100vh; transition: background 0.5s ease; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', system-ui, -apple-system, sans-serif; transition: background 0.3s, color 0.3s; }
+        body { background-color: var(--bg); color: var(--text); overflow-x: hidden; }
 
         /* --- Animations --- */
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes glowPulse { 0% { box-shadow: 0 0 5px var(--accent-glow); } 50% { box-shadow: 0 0 25px var(--accent-glow); } 100% { box-shadow: 0 0 5px var(--accent-glow); } }
-        @keyframes spin { from { transform: rotate(0deg) scale(1); } to { transform: rotate(360deg) scale(1.1); } }
+        @keyframes drift { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes bounceIn { 0% { transform: scale(0.9); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 var(--accent-glow); } 70% { box-shadow: 0 0 0 15px rgba(0,0,0,0); } 100% { box-shadow: 0 0 0 0 rgba(0,0,0,0); } }
 
-        /* --- Layout --- */
-        .page { display: none; padding: 20px; padding-bottom: 100px; animation: fadeIn 0.4s ease-out; max-width: 800px; margin: 0 auto; }
-        .page.active { display: block; }
+        /* --- Screens --- */
+        .screen { display: none; min-height: 100vh; padding: 20px 20px 100px; animation: bounceIn 0.5s ease-out; }
+        .screen.active { display: flex; flex-direction: column; align-items: center; }
 
-        /* --- UI Elements --- */
-        .glass-card { background: var(--card); backdrop-filter: blur(12px); border: 1px solid var(--border); border-radius: 24px; padding: 25px; box-shadow: 0 12px 32px rgba(0,0,0,0.2); margin-bottom: 20px; }
-        .soft-btn { background: var(--accent); color: white; border: none; padding: 14px 28px; border-radius: 16px; font-weight: 600; cursor: pointer; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); font-size: 1rem; }
-        .soft-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px var(--accent-glow); }
-        .soft-btn:active { transform: scale(0.96); }
+        /* --- Landing --- */
+        #screen-landing { justify-content: center; text-align: center; }
+        .hero-title { font-size: 3.5rem; font-weight: 900; letter-spacing: -3px; margin-bottom: 10px; background: linear-gradient(to bottom, #fff, var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
-        /* --- Draft Stage --- */
-        .wheel-container { height: 200px; display: flex; align-items: center; justify-content: center; margin: 20px 0; position: relative; }
-        #wheel-logo { width: 140px; height: 140px; object-fit: contain; transition: 0.5s; z-index: 2; }
-        .spinning #wheel-logo { animation: spin 0.2s infinite linear; }
-        .glow-effect { position: absolute; width: 160px; height: 160px; border-radius: 50%; background: var(--accent-glow); filter: blur(40px); opacity: 0; transition: 0.5s; }
-        .is-ready .glow-effect { opacity: 0.7; animation: glowPulse 2s infinite; }
+        /* --- Header & Layout --- */
+        .container { width: 100%; max-width: 900px; }
+        .glass-card { background: var(--glass); backdrop-filter: blur(10px); border: 1px solid var(--border); border-radius: 28px; padding: 25px; margin-bottom: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); width: 100%; }
+
+        /* --- Draft Tab Specifics --- */
+        .spin-stage { display: flex; flex-direction: column; align-items: center; gap: 20px; padding: 40px 0; }
+        .wheel-box { position: relative; width: 160px; height: 160px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--panel); border: 2px solid var(--border); }
+        .wheel-box.spinning img { animation: drift 0.2s infinite linear; }
+        .wheel-box.winner { border-color: var(--accent); box-shadow: 0 0 40px var(--accent-glow); transform: scale(1.1); transition: 0.5s; }
+        .wheel-box img { width: 110px; height: 110px; object-fit: contain; }
 
         /* --- Roster Grid --- */
-        .roster-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
-        .slot { background: var(--panel); border: 1.5px solid var(--border); border-radius: 20px; padding: 15px; text-align: center; transition: 0.3s; position: relative; overflow: hidden; }
-        .slot.active-target { border-color: var(--accent); animation: glowPulse 1.5s infinite; }
-        .slot-img { width: 40px; height: 40px; margin-bottom: 8px; filter: grayscale(1); opacity: 0.2; transition: 0.3s; }
-        .slot.filled .slot-img { filter: grayscale(0); opacity: 1; }
-        .ovr-badge { position: absolute; top: 10px; right: 10px; font-weight: 900; color: var(--accent); font-size: 0.8rem; }
+        .roster-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 12px; width: 100%; margin-top: 20px; }
+        .slot { background: var(--panel); border: 1px solid var(--border); border-radius: 20px; padding: 15px; text-align: center; position: relative; cursor: pointer; }
+        .slot.highlight { border-color: var(--accent); animation: pulse 1.5s infinite; }
+        .slot-ovr { font-weight: 900; color: var(--accent); font-size: 1.1rem; }
+        .slot-pos { font-size: 0.6rem; font-weight: 800; color: var(--text-dim); text-transform: uppercase; }
+        .slot-img { width: 40px; height: 40px; opacity: 0.1; filter: grayscale(1); margin: 8px 0; }
+        .slot.filled .slot-img { opacity: 1; filter: grayscale(0); }
 
-        /* --- Navigation --- */
-        .bottom-nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; background: var(--nav); backdrop-filter: blur(20px); border: 1px solid var(--border); border-radius: 30px; display: flex; justify-content: space-around; padding: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); z-index: 1000; }
-        .nav-item { color: var(--text-dim); text-decoration: none; font-size: 0.75rem; font-weight: 600; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; transition: 0.3s; }
-        .nav-item.active { color: var(--accent); }
-        .nav-item i { font-size: 1.2rem; }
+        /* --- Settings/1v1 UI --- */
+        .setting-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
 
-        /* --- Fog of War --- */
-        .fog-mode .ovr-badge, .fog-mode #total-ovr { filter: blur(6px); user-select: none; }
+        /* --- Nav --- */
+        .bottom-nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--glass); backdrop-filter: blur(20px); border: 1px solid var(--border); border-radius: 40px; display: flex; padding: 8px; gap: 10px; z-index: 1000; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
+        .nav-btn { background: transparent; border: none; color: var(--text-dim); padding: 12px 24px; border-radius: 30px; font-weight: 700; cursor: pointer; font-size: 0.85rem; }
+        .nav-btn.active { background: var(--accent); color: white; }
 
-        /* Settings Rows */
-        .settings-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
-        input[type="checkbox"] { width: 40px; height: 20px; accent-color: var(--accent); }
+        /* --- Fog/Blur Logic --- */
+        .fog-active .slot-ovr, .fog-active #calc-res { filter: blur(6px); pointer-events: none; }
+
+        .btn-main { background: var(--accent); color: white; border: none; padding: 16px 32px; border-radius: 18px; font-weight: 800; cursor: pointer; box-shadow: 0 10px 25px var(--accent-glow); }
+        .btn-main:active { transform: scale(0.95); }
+        .hidden { display: none; }
     </style>
 </head>
-<body id="app-body">
+<body id="body-tag">
 
-    <div id="draft-page" class="page active">
-        <div class="glass-card" style="text-align: center;">
-            <h1 id="picked-team-name" style="font-weight: 800; letter-spacing: -1px;">DRAFT BOARD</h1>
-            <div class="wheel-container" id="wheel-box">
-                <div class="glow-effect"></div>
-                <img src="https://a.espncdn.com/i/teamlogos/nfl/500/nfl.png" id="wheel-logo">
+    <div id="screen-landing" class="screen active">
+        <h1 class="hero-title">DYNASTY</h1>
+        <p style="color: var(--text-dim); margin-bottom: 30px; font-weight: 500;">Madden 26 Official Ratings Edition</p>
+        <button class="btn-main" onclick="app.showScreen('draft')">ENTER DRAFT</button>
+    </div>
+
+    <div id="screen-draft" class="screen">
+        <div class="container">
+            <div class="glass-card spin-stage">
+                <div id="display-name" style="font-weight: 800; opacity: 0.5;">READY TO SPIN</div>
+                <div class="wheel-box" id="wheel">
+                    <img src="https://a.espncdn.com/i/teamlogos/nfl/500/nfl.png" id="wheel-img">
+                </div>
+                <button class="btn-main" id="spin-btn" onclick="app.spin()">SPIN TEAM</button>
+                <div id="draft-msg" style="height: 1rem; font-size: 0.8rem; color: var(--accent); font-weight: 700;"></div>
             </div>
-            <button class="soft-btn" id="spin-btn" onclick="game.spin()">SPIN TEAM</button>
-            <p id="draft-status" style="margin-top: 15px; font-size: 0.9rem; color: var(--accent); height: 1.2rem; font-weight: 600;"></p>
-        </div>
-        
-        <div class="glass-card" style="text-align: center;">
-            <div style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 5px;">CURRENT ROSTER STRENGTH</div>
-            <div id="total-ovr" style="font-size: 2.5rem; font-weight: 900; color: var(--accent);">--</div>
-            <button class="soft-btn" style="margin-top:15px; background: #28a745; width: 100%;" onclick="game.saveRoster()">SAVE ROSTER</button>
+
+            <div class="glass-card">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h3 id="p1-label">PLAYER 1 ROSTER</h3>
+                    <div id="p1-ovr-total" class="slot-ovr">OVR: --</div>
+                </div>
+                <div class="roster-grid" id="p1-grid"></div>
+            </div>
+
+            <div class="glass-card hidden" id="p2-container">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h3>PLAYER 2 ROSTER</h3>
+                    <div id="p2-ovr-total" class="slot-ovr">OVR: --</div>
+                </div>
+                <div class="roster-grid" id="p2-grid"></div>
+            </div>
+
+            <div class="glass-card" style="text-align: center;">
+                <div id="calc-res" style="font-size: 2.5rem; font-weight: 900; color: var(--accent);">--</div>
+                <p id="calc-sub" style="color: var(--text-dim); margin-bottom: 15px;">Build team to calculate probability</p>
+                <button class="btn-main" style="background: #22c55e;" onclick="app.calculate()">SIMULATE SEASON</button>
+                <button class="btn-main" style="background: #6366f1; margin-left: 10px;" onclick="app.saveToVault()">SAVE TO VAULT</button>
+            </div>
         </div>
     </div>
 
-    <div id="roster-page" class="page">
-        <h2 style="margin-bottom: 20px;">Your Roster</h2>
-        <div class="roster-grid" id="slots-container"></div>
+    <div id="screen-vault" class="screen">
+        <div class="container">
+            <h2 style="margin-bottom: 20px;">Saved Rosters</h2>
+            <div id="vault-list"></div>
+        </div>
     </div>
 
-    <div id="settings-page" class="page">
-        <div class="glass-card">
-            <h2>Settings</h2>
-            <div class="settings-row"><span>Hide Rankings (Blur)</span><input type="checkbox" id="set-fog" onchange="game.applyFog()"></div>
-            <div class="settings-row"><span>Light Mode</span><input type="checkbox" id="set-theme" onchange="game.applyTheme()"></div>
-            <div class="settings-row"><span>Include Coach</span><input type="checkbox" id="set-coach" onchange="game.rebuild()"></div>
-            <div class="settings-row"><span>Include O-Line</span><input type="checkbox" id="set-oline" onchange="game.rebuild()"></div>
-            <button class="soft-btn" style="width: 100%; margin-top: 20px; background: #dc3545;" onclick="game.reset()">RESET ALL DATA</button>
+    <div id="screen-settings" class="screen">
+        <div class="container">
+            <div class="glass-card">
+                <h2 style="margin-bottom: 20px;">Settings</h2>
+                <div class="setting-row"><span>1v1 Duel Mode</span><input type="checkbox" id="set-1v1" onchange="app.toggle1v1()"></div>
+                <div class="setting-row"><span>Hide Rankings (Blur)</span><input type="checkbox" id="set-fog" onchange="app.toggleFog()"></div>
+                <div class="setting-row"><span>Include Coach</span><input type="checkbox" id="set-coach" onchange="app.initGrids()"></div>
+                <div class="setting-row"><span>Include O-Line</span><input type="checkbox" id="set-oline" onchange="app.initGrids()"></div>
+                <div class="setting-row"><span>Light Mode</span><input type="checkbox" id="set-theme" onchange="app.toggleTheme()"></div>
+                <button class="btn-main" style="width: 100%; margin-top: 20px; background: #ef4444;" onclick="app.resetAll()">WIPE ALL DATA</button>
+            </div>
         </div>
     </div>
 
     <nav class="bottom-nav">
-        <div class="nav-item active" onclick="game.nav('draft', this)"><i>🎯</i>Draft</div>
-        <div class="nav-item" onclick="game.nav('roster', this)"><i>📋</i>Roster</div>
-        <div class="nav-item" onclick="game.nav('settings', this)"><i>⚙️</i>Settings</div>
+        <button class="nav-btn active" onclick="app.showScreen('draft', this)">DRAFT</button>
+        <button class="nav-btn" onclick="app.showScreen('vault', this)">VAULT</button>
+        <button class="nav-btn" onclick="app.showScreen('settings', this)">SETTINGS</button>
     </nav>
 
     <script>
+        // Official Madden 26 Ratings (Top Stars per team)
         const TEAMS = [
-            { id: 'cin', n: 'Bengals', qb: 93, rb: 81, wr: 99, te: 80, def: 84, c: 92, ol: 85 },
-            { id: 'kc', n: 'Chiefs', qb: 99, rb: 87, wr: 85, te: 98, def: 95, c: 99, ol: 92 },
-            { id: 'bal', n: 'Ravens', qb: 98, rb: 94, wr: 84, te: 94, def: 95, c: 88, ol: 83 },
-            { id: 'sf', n: '49ers', qb: 88, rb: 99, wr: 92, te: 97, def: 96, c: 90, ol: 95 },
-            { id: 'phi', n: 'Eagles', qb: 86, rb: 92, wr: 95, te: 89, def: 88, c: 85, ol: 96 },
-            { id: 'det', n: 'Lions', qb: 83, rb: 88, wr: 95, te: 91, def: 86, c: 84, ol: 98 },
-            { id: 'dal', n: 'Cowboys', qb: 90, rb: 78, wr: 96, te: 84, def: 92, c: 82, ol: 89 },
-            { id: 'mia', n: 'Dolphins', qb: 84, rb: 85, wr: 99, te: 77, def: 83, c: 80, ol: 78 },
-            { id: 'buf', n: 'Bills', qb: 92, rb: 86, wr: 82, te: 86, def: 87, c: 85, ol: 84 },
-            { id: 'nyj', n: 'Jets', qb: 81, rb: 90, wr: 88, te: 79, def: 97, c: 78, ol: 86 }
+            { id: 'bal', n: 'Ravens', qb: 99, rb: 98, wr: 88, te: 94, def: 95, c: 88, ol: 85 }, // Lamar 99
+            { id: 'phi', n: 'Eagles', qb: 87, rb: 99, wr: 93, te: 88, def: 88, c: 85, ol: 99 }, // Saquon 99
+            { id: 'cin', n: 'Bengals', qb: 97, rb: 82, wr: 99, te: 81, def: 84, c: 92, ol: 85 }, // Chase 99
+            { id: 'buf', n: 'Bills', qb: 99, rb: 89, wr: 84, te: 86, def: 88, c: 84, ol: 86 }, // Josh Allen 99
+            { id: 'min', n: 'Vikings', qb: 78, rb: 86, wr: 99, te: 89, def: 84, c: 82, ol: 85 }, // JJ 99
+            { id: 'kc', n: 'Chiefs', qb: 95, rb: 87, wr: 86, te: 93, def: 97, c: 99, ol: 94 },
+            { id: 'det', n: 'Lions', qb: 84, rb: 95, wr: 96, te: 91, def: 88, c: 85, ol: 96 },
+            { id: 'dal', n: 'Cowboys', qb: 90, rb: 79, wr: 95, te: 85, def: 98, c: 83, ol: 88 },
+            { id: 'sf', n: '49ers', qb: 88, rb: 94, wr: 92, te: 98, def: 97, c: 90, ol: 97 },
+            { id: 'cle', n: 'Browns', qb: 76, rb: 90, wr: 88, te: 89, def: 99, c: 82, ol: 85 } // Myles 99
         ];
 
-        const game = {
-            state: {
-                spinning: false,
-                currentPick: null,
-                roster: JSON.parse(localStorage.getItem('dynasty_roster')) || {}
-            },
+        const app = {
+            state: { p: 1, is1v1: false, spinning: false, currentPick: null, rosters: { 1: {}, 2: {} } },
 
             init() {
-                this.rebuild();
-                this.applyTheme();
-                this.updateOvr();
+                this.initGrids();
+                this.loadVault();
             },
 
-            nav(pageId, el) {
-                document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-                document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-                document.getElementById(pageId + '-page').classList.add('active');
-                el.classList.add('active');
+            showScreen(id, btn) {
+                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                document.getElementById('screen-' + id).classList.add('active');
+                if(btn) {
+                    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                }
             },
 
-            rebuild() {
-                const container = document.getElementById('slots-container');
-                container.innerHTML = '';
-                const base = ['QB', 'RB', 'WR', 'TE', 'DEF'];
-                if (document.getElementById('set-coach').checked) base.push('COACH');
-                if (document.getElementById('set-oline').checked) base.push('OLINE');
+            initGrids() {
+                const positions = ['QB', 'RB', 'WR', 'TE', 'DEF'];
+                if (document.getElementById('set-coach').checked) positions.push('COACH');
+                if (document.getElementById('set-oline').checked) positions.push('OLINE');
+                this.state.positions = positions;
 
-                base.forEach(pos => {
-                    const data = this.state.roster[pos];
-                    const div = document.createElement('div');
-                    div.className = `slot ${data ? 'filled' : ''}`;
-                    div.id = `slot-${pos}`;
-                    div.onclick = () => this.assign(pos);
-                    div.innerHTML = `
-                        <div class="ovr-badge">${data ? data.ovr : ''}</div>
-                        <div style="font-size: 0.6rem; font-weight: 800; opacity: 0.5;">${pos}</div>
-                        <img src="${data ? `https://a.espncdn.com/i/teamlogos/nfl/500/${data.id}.png` : 'https://a.espncdn.com/i/teamlogos/nfl/500/nfl.png'}" class="slot-img">
-                        <div style="font-size: 0.75rem; font-weight: 700;">${data ? data.team : 'EMPTY'}</div>
-                    `;
-                    container.appendChild(div);
+                [1, 2].forEach(p => {
+                    const grid = document.getElementById(`p${p}-grid`);
+                    grid.innerHTML = '';
+                    positions.forEach(pos => {
+                        const div = document.createElement('div');
+                        div.className = 'slot';
+                        div.id = `slot-${p}-${pos}`;
+                        div.onclick = () => this.assign(p, pos);
+                        div.innerHTML = `<div class="slot-pos">${pos}</div><img src="https://a.espncdn.com/i/teamlogos/nfl/500/nfl.png" class="slot-img" id="img-${p}-${pos}"><div class="slot-ovr" id="ovr-${p}-${pos}">--</div>`;
+                        grid.appendChild(div);
+                    });
                 });
             },
 
             spin() {
                 if (this.state.spinning || this.state.currentPick) return;
                 this.state.spinning = true;
-                const box = document.getElementById('wheel-box');
-                const logo = document.getElementById('wheel-logo');
-                const title = document.getElementById('picked-team-name');
-                box.classList.add('spinning');
-                
-                let i = 0;
-                const interval = setInterval(() => {
-                    const temp = TEAMS[Math.floor(Math.random() * TEAMS.length)];
-                    logo.src = `https://a.espncdn.com/i/teamlogos/nfl/500/${temp.id}.png`;
-                    title.innerText = temp.n.toUpperCase();
-                    i++;
-                    if (i > 25) {
-                        clearInterval(interval);
-                        this.state.currentPick = TEAMS.find(t => t.n.toUpperCase() === title.innerText);
-                        box.classList.remove('spinning');
-                        box.classList.add('is-ready');
+                const wheel = document.getElementById('wheel');
+                const img = document.getElementById('wheel-img');
+                const name = document.getElementById('display-name');
+                wheel.classList.add('spinning');
+                wheel.classList.remove('winner');
+
+                let count = 0;
+                const cycle = setInterval(() => {
+                    const t = TEAMS[Math.floor(Math.random() * TEAMS.length)];
+                    img.src = `https://a.espncdn.com/i/teamlogos/nfl/500/${t.id}.png`;
+                    name.innerText = t.n;
+                    count++;
+                    if (count > 20) {
+                        clearInterval(cycle);
+                        this.state.currentPick = TEAMS.find(x => x.n === name.innerText);
+                        wheel.classList.remove('spinning');
+                        wheel.classList.add('winner');
                         this.state.spinning = false;
-                        document.getElementById('draft-status').innerText = "SELECT A SLOT IN ROSTER TAB";
-                        document.querySelectorAll('.slot').forEach(s => {
-                            if (!s.classList.contains('filled')) s.classList.add('active-target');
-                        });
+                        document.getElementById('draft-msg').innerText = `PLACE FOR PLAYER ${this.state.p}`;
+                        this.highlightEmpty();
                     }
-                }, 80);
+                }, 100);
             },
 
-            assign(pos) {
-                if (!this.state.currentPick || this.state.roster[pos]) return;
-                
+            highlightEmpty() {
+                this.state.positions.forEach(pos => {
+                    const el = document.getElementById(`slot-${this.state.p}-${pos}`);
+                    if (!this.state.rosters[this.state.p][pos]) el.classList.add('highlight');
+                });
+            },
+
+            assign(p, pos) {
+                if (!this.state.currentPick || p !== this.state.p || this.state.rosters[p][pos]) return;
                 const t = this.state.currentPick;
-                const ratingMap = { 'QB': t.qb, 'RB': t.rb, 'WR': t.wr, 'TE': t.te, 'DEF': t.def, 'COACH': t.c, 'OLINE': t.ol };
+                const ratings = { 'QB': t.qb, 'RB': t.rb, 'WR': t.wr, 'TE': t.te, 'DEF': t.def, 'COACH': t.c, 'OLINE': t.ol };
                 
-                this.state.roster[pos] = { id: t.id, team: t.n, ovr: ratingMap[pos] };
+                this.state.rosters[p][pos] = ratings[pos];
+                const slot = document.getElementById(`slot-${p}-${pos}`);
+                slot.classList.add('filled');
+                slot.classList.remove('highlight');
+                document.getElementById(`img-${p}-${pos}`).src = `https://a.espncdn.com/i/teamlogos/nfl/500/${t.id}.png`;
+                document.getElementById(`ovr-${p}-${pos}`).innerText = ratings[pos];
+
                 this.state.currentPick = null;
+                document.getElementById('draft-msg').innerText = "";
+                document.querySelectorAll('.slot').forEach(s => s.classList.remove('highlight'));
+                this.updateOvr(p);
                 
-                document.getElementById('wheel-box').classList.remove('is-ready');
-                document.getElementById('draft-status').innerText = "PICK SAVED!";
-                document.querySelectorAll('.slot').forEach(s => s.classList.remove('active-target'));
-                
-                this.rebuild();
-                this.updateOvr();
+                if (this.state.is1v1) this.state.p = (this.state.p === 1 ? 2 : 1);
             },
 
-            updateOvr() {
-                const vals = Object.values(this.state.roster).map(v => v.ovr);
-                if (!vals.length) return;
-                const avg = Math.round(vals.reduce((a,b)=>a+b,0) / vals.length);
-                document.getElementById('total-ovr').innerText = avg;
+            updateOvr(p) {
+                const vals = Object.values(this.state.rosters[p]);
+                const avg = vals.length ? Math.round(vals.reduce((a,b)=>a+b,0) / this.state.positions.length) : 0;
+                document.getElementById(`p${p}-ovr-total`).innerText = `OVR: ${avg}`;
+                this.state.rosters[p].total = avg;
             },
 
-            saveRoster() {
-                localStorage.setItem('dynasty_roster', JSON.stringify(this.state.roster));
-                alert("Roster Saved to Browser!");
-            },
-
-            applyTheme() {
-                const isLight = document.getElementById('set-theme').checked;
-                document.documentElement.setAttribute('data-theme', isLight ? 'light' : 'dark');
-            },
-
-            applyFog() {
-                document.getElementById('app-body').classList.toggle('fog-mode', document.getElementById('set-fog').checked);
-            },
-
-            reset() {
-                if (confirm("Reset everything?")) {
-                    localStorage.clear();
-                    location.reload();
+            calculate() {
+                const r1 = this.state.rosters[1].total || 0;
+                if (!r1) return;
+                if (this.state.is1v1) {
+                    const r2 = this.state.rosters[2].total || 0;
+                    const prob = Math.round(50 + (r1 - r2) * 5);
+                    document.getElementById('calc-res').innerText = `${Math.max(5, Math.min(95, prob))}%`;
+                    document.getElementById('calc-sub').innerText = "Win probability for Player 1";
+                } else {
+                    const wins = Math.round((r1 - 70) / 1.8);
+                    document.getElementById('calc-res').innerText = `${Math.max(0, Math.min(17, wins))}-17`;
+                    document.getElementById('calc-sub').innerText = "Projected Season Record";
                 }
+            },
+
+            saveToVault() {
+                const vault = JSON.parse(localStorage.getItem('dynasty_vault') || '[]');
+                vault.push({ date: new Date().toLocaleDateString(), r1: this.state.rosters[1].total, r2: this.state.rosters[2].total });
+                localStorage.setItem('dynasty_vault', JSON.stringify(vault));
+                this.loadVault();
+                alert("Roster Saved!");
+            },
+
+            loadVault() {
+                const vault = JSON.parse(localStorage.getItem('dynasty_vault') || '[]');
+                const list = document.getElementById('vault-list');
+                list.innerHTML = vault.reverse().map(entry => `
+                    <div class="glass-card">
+                        <div style="color:var(--accent); font-weight:800;">DRAFT: ${entry.date}</div>
+                        <div>P1 OVR: ${entry.r1} ${entry.r2 ? '| P2 OVR: ' + entry.r2 : ''}</div>
+                    </div>
+                `).join('');
+            },
+
+            toggle1v1() {
+                this.state.is1v1 = document.getElementById('set-1v1').checked;
+                document.getElementById('p2-container').classList.toggle('hidden', !this.state.is1v1);
+                this.resetCurrentDraft();
+            },
+
+            toggleFog() {
+                document.getElementById('body-tag').classList.toggle('fog-active', document.getElementById('set-fog').checked);
+            },
+
+            toggleTheme() {
+                document.documentElement.setAttribute('data-theme', document.getElementById('set-theme').checked ? 'light' : 'dark');
+            },
+
+            resetCurrentDraft() {
+                this.state.rosters = { 1: {}, 2: {} };
+                this.state.p = 1;
+                this.initGrids();
+            },
+
+            resetAll() {
+                if(confirm("Wipe everything?")) { localStorage.clear(); location.reload(); }
             }
         };
 
-        game.init();
+        app.init();
     </script>
 </body>
 </html>
