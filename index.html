@@ -301,7 +301,7 @@
         ring.style.transform = 'scale(1.1)';
 
         let velocity = 50;
-        let deceleration = 1.15;
+        let deceleration = 1.07;
         let spinCount = 0;
         let maxSpins = 20 + Math.floor(Math.random() * 10);
 
@@ -317,7 +317,7 @@
                 state.isSpinning = false;
                 document.getElementById('spin-btn').disabled = false;
                 ring.style.transform = 'scale(1)';
-                setTimeout(() => openDraft(randomTeam), 800);
+                setTimeout(() => openDraft(randomTeam), 500);
             } else {
                 setTimeout(tick, velocity);
             }
