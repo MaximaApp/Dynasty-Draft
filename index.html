@@ -117,10 +117,11 @@
 
         /* --- NAVIGATION BAR --- */
         .nav-bar {
-            height: 80px; background: rgba(10, 15, 25, 0.95);
+            height: 80px; background: var(--bg);
             display: flex; align-items: center; justify-content: space-around;
-            border-top: 1px solid rgba(255,255,255,0.1);
+            border-top: 1px solid rgba(128, 128, 128, 0.2);
             z-index: 1000;
+            flex-shrink: 0;
         }
         .nav-item { 
             color: var(--text-dim); font-size: 0.8rem; font-weight: 800; 
@@ -177,7 +178,7 @@
 
     <div id="app">
         <header class="app-header">
-            <h1>DYNASTY DRAFT</h1>
+            <h1>Dynasty Draft</h1>
             <p>Build Your Own 17-0 NFL Team</p>
         </header>
 
@@ -188,11 +189,11 @@
 
             <div class="spin-section">
                 <div class="logo-ring" id="logo-ring">
-                    <img src="https://a.espncdn.com/i/teamlogos/nfl/500/nfl.png" id="spin-logo">
+                    <img src="https://static.www.nfl.com/image/upload/v1554321393/league/ov7cxsqpp88ih9bdqcry.png" id="spin-logo">
                 </div>
                 <div class="team-label" id="spin-label">READY?</div>
-                <button class="primary-btn" id="spin-btn" onclick="startSpin()">GENERATE</button>
-                <button class="reset-btn" onclick="resetAll()">RESET</button>
+                <button class="primary-btn" id="spin-btn" onclick="startSpin()">SPIN TEAM</button>
+                <button class="reset-btn" onclick="resetAll()">RESET GAME</button>
                 <div id="result-text" style="font-weight: 800; font-size: 1.2rem; text-align: center; margin-top: 10px;"></div>
             </div>
 
@@ -407,7 +408,7 @@
         document.getElementById('spin-btn').style.display = 'block';
         document.getElementById('spin-label').innerText = 'READY?';
         document.getElementById('result-text').innerText = '';
-        document.getElementById('spin-logo').src = "https://a.espncdn.com/i/teamlogos/nfl/500/nfl.png";
+        document.getElementById('spin-logo').src = "https://static.www.nfl.com/image/upload/v1554321393/league/ov7cxsqpp88ih9bdqcry.png";
         renderBoard('p1');
         renderBoard('p2');
         switchView('draft');
