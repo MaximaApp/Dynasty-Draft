@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DYNASTY DRAFT 2026</title>
+    <title>Dynasty Draft</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
@@ -15,11 +15,12 @@
             --text: #ffffff;
             --text-dim: #94a3b8;
             --radius: 28px;
+            --shadow: 0 20px 50px rgba(0,0,0,0.6);
         }
 
         [data-theme="light"] {
-            --bg: #f8fafc;
-            --card: rgba(0, 0, 0, 0.04);
+            --bg: #f1f5f9;
+            --card: rgba(255, 255, 255, 0.8);
             --accent: #4f46e5;
             --accent-glow: rgba(79, 70, 229, 0.2);
             --text: #0f172a;
@@ -27,14 +28,14 @@
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
         body { 
             margin: 0; background: var(--bg); color: var(--text); 
             font-family: 'Plus Jakarta Sans', sans-serif;
             height: 100vh; width: 100vw; overflow: hidden;
-            transition: background 0.3s ease;
         }
 
-        /* --- INTRO --- */
+        /* --- INTRO PAGE --- */
         #intro {
             position: fixed; inset: 0; z-index: 2000; background: var(--bg);
             display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -45,83 +46,126 @@
             background: linear-gradient(to bottom, #fff, var(--accent));
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
             filter: drop-shadow(0 0 25px var(--accent-glow));
+            animation: titlePulse 3s infinite ease-in-out;
+        }
+        @keyframes titlePulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.03); } }
+
+        /* --- TOP LEFT HEADER --- */
+        .app-header {
+            padding: 30px 20px 10px;
+            text-align: left;
+        }
+        .app-header h1 {
+            font-size: 1.8rem; font-weight: 800; margin: 0;
+            background: linear-gradient(90deg, #fff, var(--accent));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .app-header p {
+            font-size: 0.75rem; color: var(--text-dim); margin: 4px 0 0;
+            font-weight: 600; letter-spacing: 0.5px; opacity: 0.7;
         }
 
-        /* --- APP STRUCTURE --- */
+        /* --- MAIN LAYOUT --- */
         #app { height: 100%; display: flex; flex-direction: column; }
-        .app-header { padding: 30px 20px 10px; text-align: left; }
-        .app-header h1 { font-size: 1.8rem; font-weight: 800; margin: 0; color: var(--text); }
-        .app-header p { font-size: 0.75rem; color: var(--text-dim); margin: 4px 0 0; font-weight: 600; }
+        
+        .view-container {
+            flex: 1; overflow-y: auto; padding-bottom: 20px; 
+            scroll-behavior: smooth; -webkit-overflow-scrolling: touch;
+        }
 
-        .view-container { flex: 1; overflow-y: auto; padding-bottom: 20px; }
+        .section-title { padding: 10px 20px; text-align: center; }
+        .section-title h2 { 
+            font-size: 1rem; letter-spacing: 4px; text-transform: uppercase; 
+            color: var(--accent); text-shadow: 0 0 10px var(--accent-glow);
+        }
 
         /* --- SPIN SECTION --- */
-        .spin-section { padding: 10px 20px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+        .spin-section { padding: 20px; display: flex; flex-direction: column; align-items: center; gap: 15px; }
         .logo-ring {
-            width: 140px; height: 140px; border-radius: 50%;
+            width: 150px; height: 150px; border-radius: 50%;
             background: var(--card); border: 2px solid var(--accent);
             display: flex; align-items: center; justify-content: center;
             box-shadow: 0 0 30px var(--accent-glow);
-            transition: transform 0.3s;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        .logo-ring img { width: 70%; height: 70%; object-fit: contain; }
-        .team-label { font-size: 1.6rem; font-weight: 800; text-shadow: 0 0 10px var(--accent-glow); }
+        .logo-ring img { width: 75%; height: 75%; object-fit: contain; transition: transform 0.2s; }
+        .team-label { font-size: 1.8rem; font-weight: 800; text-shadow: 0 0 15px var(--accent-glow); }
 
-        /* --- BOARD --- */
-        .board-container { padding: 0 20px; margin-top: 15px; }
-        .player-tag { font-weight: 800; color: var(--accent); margin-bottom: 8px; display: block; font-size: 0.7rem; letter-spacing: 1px; }
+        /* --- DRAFT BOARD --- */
+        .board-container { padding: 0 20px; margin-bottom: 25px; animation: slideUp 0.5s ease; }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        
+        .player-tag { font-weight: 800; color: var(--accent); margin-bottom: 10px; display: block; font-size: 0.8rem; }
         .board { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
         
         .slot {
-            background: var(--card); border-radius: 20px; padding: 18px 5px;
+            background: var(--card); border-radius: 20px; padding: 20px 5px;
             text-align: center; border: 1px solid rgba(255,255,255,0.05);
-            transition: all 0.3s cubic-bezier(0.2, 1, 0.3, 1);
+            transition: all 0.4s cubic-bezier(0.2, 1, 0.3, 1);
         }
-        .slot.active-turn { border: 2px solid var(--accent); box-shadow: 0 0 15px var(--accent-glow); transform: scale(1.02); }
-        .slot.filled { background: rgba(99, 102, 241, 0.12); border-color: var(--accent); animation: pop 0.4s ease; }
-        @keyframes pop { 0% { transform: scale(0.9); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        .slot:active { transform: scale(0.95); }
+        .slot.active-turn { border: 2px solid var(--accent); box-shadow: 0 0 15px var(--accent-glow); }
+        .slot.filled { 
+            background: rgba(99, 102, 241, 0.15); border-color: var(--accent);
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes popIn { from { transform: scale(0.8); } to { transform: scale(1); } }
         
-        .slot-pos { font-size: 0.65rem; font-weight: 800; color: var(--text-dim); margin-bottom: 4px; }
-        .slot-ovr { font-size: 1.4rem; font-weight: 800; transition: 0.4s; }
-        .blur-ovr { filter: blur(10px); opacity: 0.2; }
+        .slot-pos { font-size: 0.7rem; font-weight: 800; color: var(--text-dim); margin-bottom: 5px; }
+        .slot-ovr { font-size: 1.5rem; font-weight: 800; transition: filter 0.5s ease; }
+        .blur-ovr { filter: blur(10px); opacity: 0.3; }
 
-        /* --- RESULTS --- */
-        #result-text { 
-            font-weight: 800; text-align: center; margin-top: 15px; 
-            min-height: 50px; line-height: 1.2;
-            animation: fadeIn 0.5s ease;
+        /* --- NAVIGATION BAR --- */
+        .nav-bar {
+            height: 80px; background: rgba(10, 15, 25, 0.95);
+            display: flex; align-items: center; justify-content: space-around;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            z-index: 1000;
         }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* --- NAV --- */
-        .nav-bar { height: 75px; background: var(--bg); display: flex; border-top: 1px solid rgba(255,255,255,0.1); }
-        .nav-item { flex: 1; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.75rem; color: var(--text-dim); cursor: pointer; }
-        .nav-item.active { color: var(--accent); box-shadow: inset 0 2px 0 var(--accent); }
+        .nav-item { 
+            color: var(--text-dim); font-size: 0.8rem; font-weight: 800; 
+            text-align: center; flex: 1; transition: 0.3s; cursor: pointer;
+            letter-spacing: 1px;
+        }
+        .nav-item.active { color: var(--accent); text-shadow: 0 0 10px var(--accent-glow); }
 
         /* --- BUTTONS --- */
         .primary-btn {
-            background: var(--accent); color: #fff; border: none; padding: 16px 40px;
-            border-radius: 40px; font-weight: 800; font-size: 1rem;
-            box-shadow: 0 10px 25px var(--accent-glow); cursor: pointer; transition: 0.3s;
+            background: var(--accent); color: #fff; border: none; padding: 18px 45px;
+            border-radius: 40px; font-weight: 800; font-size: 1.1rem;
+            box-shadow: 0 10px 30px var(--accent-glow); cursor: pointer; transition: 0.3s;
         }
-        .primary-btn:active { transform: scale(0.94); }
-        .reset-btn { background: none; border: 1px solid var(--text-dim); color: var(--text-dim); padding: 8px 20px; border-radius: 20px; font-weight: 800; font-size: 0.7rem; cursor: pointer; opacity: 0.6; }
+        .primary-btn:hover { transform: translateY(-2px); box-shadow: 0 15px 35px var(--accent-glow); }
+        .primary-btn:active { transform: scale(0.95); }
+        
+        .reset-btn {
+            background: transparent; border: 1.5px solid rgba(255,255,255,0.1);
+            color: var(--text-dim); padding: 10px 30px; border-radius: 30px;
+            font-size: 0.8rem; font-weight: 800; margin-top: 5px; transition: 0.3s;
+        }
+        .reset-btn:hover { color: #ef4444; border-color: #ef4444; }
 
         /* --- MODAL --- */
-        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); z-index: 3000; display: none; align-items: flex-end; }
+        .modal {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(12px); z-index: 3000;
+            display: none; align-items: flex-end;
+        }
         .modal.show { display: flex; }
-        .modal-sheet { background: var(--bg); width: 100%; border-radius: 30px 30px 0 0; padding: 30px 20px 50px; transform: translateY(100%); transition: 0.4s cubic-bezier(0.2, 1, 0.3, 1); }
+        .modal-sheet {
+            background: var(--bg); width: 100%; border-radius: 40px 40px 0 0;
+            padding: 30px 20px 60px; border-top: 2px solid var(--accent);
+            transform: translateY(100%); transition: transform 0.5s cubic-bezier(0.2, 1, 0.3, 1);
+        }
         .modal.show .modal-sheet { transform: translateY(0); }
-        .choice-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+        .choice-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 25px; }
 
-        /* --- SETTINGS --- */
-        .settings-row { display: flex; justify-content: space-between; align-items: center; padding: 20px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; inset: 0; background-color: #334155; transition: .4s; border-radius: 24px; }
-        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: var(--accent); }
-        input:checked + .slider:before { transform: translateX(20px); }
+        .settings-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 24px 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+            animation: slideLeft 0.4s ease forwards; opacity: 0;
+        }
+        @keyframes slideLeft { from { transform: translateX(20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
     </style>
 </head>
 <body>
@@ -138,6 +182,10 @@
         </header>
 
         <div id="view-draft" class="view-container">
+            <div class="section-title">
+                <h2 id="mode-indicator">SOLO SEASON</h2>
+            </div>
+
             <div class="spin-section">
                 <div class="logo-ring" id="logo-ring">
                     <img src="https://a.espncdn.com/i/teamlogos/nfl/500/nfl.png" id="spin-logo">
@@ -145,7 +193,7 @@
                 <div class="team-label" id="spin-label">READY?</div>
                 <button class="primary-btn" id="spin-btn" onclick="startSpin()">SPIN TEAM</button>
                 <button class="reset-btn" onclick="resetAll()">RESET GAME</button>
-                <div id="result-text"></div>
+                <div id="result-text" style="font-weight: 800; font-size: 1.2rem; text-align: center; margin-top: 10px;"></div>
             </div>
 
             <div class="board-container">
@@ -160,18 +208,18 @@
         </div>
 
         <div id="view-settings" class="view-container" style="display: none; padding: 20px;">
-            <h2 style="font-weight: 800; font-size: 2rem; margin-bottom: 20px;">Settings</h2>
-            <div class="settings-row">
-                <span>Light Mode</span>
-                <label class="switch"><input type="checkbox" id="check-theme" onchange="updateSettings()"><span class="slider"></span></label>
-            </div>
-            <div class="settings-row">
+            <h2 style="font-size: 2.2rem; font-weight: 800; margin: 20px 0 30px;">Settings</h2>
+            <div class="settings-row" style="animation-delay: 0.1s;">
                 <span>1v1 Battle Mode</span>
-                <label class="switch"><input type="checkbox" id="check-1v1" onchange="updateSettings()"><span class="slider"></span></label>
+                <input type="checkbox" id="check-1v1" onchange="toggleMode()" style="width: 25px; height: 25px;">
             </div>
-            <div class="settings-row">
+            <div class="settings-row" style="animation-delay: 0.2s;">
                 <span>Hide Overalls</span>
-                <label class="switch"><input type="checkbox" id="check-hide" checked onchange="updateSettings()"><span class="slider"></span></label>
+                <input type="checkbox" id="check-hide" checked onchange="toggleHide()" style="width: 25px; height: 25px;">
+            </div>
+            <div class="settings-row" style="animation-delay: 0.3s;">
+                <span>Light Mode</span>
+                <input type="checkbox" id="check-theme" onchange="toggleTheme()" style="width: 25px; height: 25px;">
             </div>
         </div>
 
@@ -183,7 +231,7 @@
 
     <div class="modal" id="draft-modal">
         <div class="modal-sheet">
-            <h3 style="text-align:center; font-weight:800; margin-bottom:20px;">DRAFT POSITION</h3>
+            <h3 id="modal-title" style="text-align:center; font-size: 1.4rem; font-weight: 800;">Draft Position</h3>
             <div class="choice-grid" id="choice-grid"></div>
         </div>
     </div>
@@ -214,29 +262,12 @@
         gameOver: false
     };
 
-    // Initialize Theme
-    if (localStorage.getItem('theme') === 'light') {
-        document.documentElement.setAttribute('data-theme', 'light');
-        document.getElementById('check-theme').checked = true;
-    }
-
     function enterApp() {
         document.getElementById('intro').style.transform = 'translateY(-100%)';
-        renderBoard('p1');
-        renderBoard('p2');
+        init();
     }
 
-    function updateSettings() {
-        state.is1v1 = document.getElementById('check-1v1').checked;
-        state.hideOvr = document.getElementById('check-hide').checked;
-        const isLight = document.getElementById('check-theme').checked;
-        
-        document.documentElement.setAttribute('data-theme', isLight ? 'light' : 'dark');
-        localStorage.setItem('theme', isLight ? 'light' : 'dark');
-
-        document.getElementById('container-p2').style.display = state.is1v1 ? 'block' : 'none';
-        document.getElementById('p1-tag').innerText = state.is1v1 ? 'PLAYER 1 ROSTER' : 'YOUR ROSTER';
-        
+    function init() {
         renderBoard('p1');
         renderBoard('p2');
     }
@@ -252,8 +283,9 @@
             if(state.is1v1 && !state.gameOver && state.currentPlayer === (playerKey === 'p1' ? 1 : 2)) {
                 div.classList.add('active-turn');
             }
-            const blur = (state.hideOvr && !state.gameOver && player) ? 'blur-ovr' : '';
-            div.innerHTML = `<div class="slot-pos">${positions[i]}</div><div class="slot-ovr ${blur}">${player ? player.ovr : '-'}</div>`;
+            const ovrVal = player ? player.ovr : '-';
+            const blurClass = (state.hideOvr && !state.gameOver && player) ? 'blur-ovr' : '';
+            div.innerHTML = `<div class="slot-pos">${positions[i]}</div><div class="slot-ovr ${blurClass}">${ovrVal}</div>`;
             board.appendChild(div);
         });
         checkWinCondition();
@@ -263,22 +295,26 @@
         if(state.isSpinning || state.gameOver) return;
         state.isSpinning = true;
         document.getElementById('spin-btn').disabled = true;
+        const ring = document.getElementById('logo-ring');
+        ring.style.transform = 'scale(1.1)';
 
-        let velocity = 40;
-        let decel = 1.08;
-        let spins = 0;
+        let velocity = 50;
+        let deceleration = 1.07;
+        let spinCount = 0;
         let maxSpins = 20 + Math.floor(Math.random() * 10);
 
         function tick() {
-            spins++;
+            spinCount++;
             const randomTeam = teams[Math.floor(Math.random() * teams.length)];
-            document.getElementById('spin-logo').src = `https://a.espncdn.com/i/teamlogos/nfl/500/${randomTeam.id}.png`;
+            const logo = document.getElementById('spin-logo');
+            logo.src = `https://a.espncdn.com/i/teamlogos/nfl/500/${randomTeam.id}.png`;
             document.getElementById('spin-label').innerText = randomTeam.name.toUpperCase();
-            velocity *= decel;
+            velocity *= deceleration;
 
-            if (spins >= maxSpins) {
+            if (spinCount >= maxSpins) {
                 state.isSpinning = false;
                 document.getElementById('spin-btn').disabled = false;
+                ring.style.transform = 'scale(1)';
                 setTimeout(() => openDraft(randomTeam), 400);
             } else {
                 setTimeout(tick, velocity);
@@ -297,9 +333,11 @@
             if(!activeRoster[i]) {
                 const btn = document.createElement('div');
                 btn.className = 'slot filled';
-                btn.innerHTML = `<div class="slot-pos">PICK</div><div class="slot-ovr" style="font-size:1rem">${pos}</div>`;
+                btn.style.padding = '25px';
+                btn.innerHTML = `<div class="slot-pos">DRAFT</div><div class="slot-ovr">${pos}</div>`;
                 btn.onclick = () => {
-                    activeRoster[i] = { ovr: 78 + Math.floor(Math.random() * 21) };
+                    const rating = 79 + Math.floor(Math.random() * 20);
+                    activeRoster[i] = { pos, ovr: rating };
                     if(state.is1v1) state.currentPlayer = state.currentPlayer === 1 ? 2 : 1;
                     modal.classList.remove('show');
                     renderBoard('p1');
@@ -320,25 +358,24 @@
     function finalize() {
         state.gameOver = true;
         document.getElementById('spin-btn').style.display = 'none';
-        const p1Sum = state.p1.reduce((s, p) => s + p.ovr, 0);
+        const p1Score = state.p1.reduce((sum, p) => sum + p.ovr, 0);
         const resEl = document.getElementById('result-text');
 
         if(state.is1v1) {
-            const p2Sum = state.p2.reduce((s, p) => s + p.ovr, 0);
-            const prob = (Math.exp(0.12 * p1Sum) / (Math.exp(0.12 * p1Sum) + Math.exp(0.12 * p2Sum))) * 100;
-            const p1Wins = prob > 50;
-            resEl.innerHTML = `<span style="color:var(--accent)">WIN PROBABILITY: ${p1Wins ? prob.toFixed(1) : (100-prob).toFixed(1)}%</span><br>${p1Wins ? 'PLAYER 1 WINS' : 'PLAYER 2 WINS'}`;
+            const p2Score = state.p2.reduce((sum, p) => sum + p.ovr, 0);
+            const p1Prob = (Math.exp(0.12 * p1Score) / (Math.exp(0.12 * p1Score) + Math.exp(0.12 * p2Score))) * 100;
+            const p1Wins = p1Prob > 50;
+            resEl.innerHTML = `PROBABILITY: ${p1Wins ? p1Prob.toFixed(1) : (100-p1Prob).toFixed(1)}%<br>${p1Wins ? 'PLAYER 1 DOMINATES' : 'PLAYER 2 DOMINATES'}`;
         } else {
-            const avg = p1Sum / 6;
-            const winChance = Math.pow((avg - 75) / 25, 2);
+            const avg = p1Score / 6;
+            const winChance = Math.pow((avg - 72) / 28, 1.8);
             const wins = Math.min(17, Math.max(0, Math.floor(winChance * 17 + (Math.random() * 2))));
-            const pct = ((wins / 17) * 100).toFixed(1);
-            resEl.innerHTML = `<span style="font-size:1.5rem">RECORD: ${wins}-17</span><br><span style="color:var(--accent)">WIN PERCENTAGE: ${pct}%</span>`;
+            resEl.innerHTML = `FINAL RECORD: ${wins} - ${17-wins}`;
+            if(wins === 17) confetti({ particleCount: 250, spread: 120 });
         }
-        
-        confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#6366f1', '#ffffff'] });
         renderBoard('p1');
         renderBoard('p2');
+        confetti({ particleCount: 150, origin: { y: 0.6 } });
     }
 
     function switchView(view) {
@@ -348,6 +385,20 @@
         document.getElementById('nav-settings').classList.toggle('active', view === 'settings');
     }
 
+    function toggleMode() {
+        state.is1v1 = document.getElementById('check-1v1').checked;
+        document.getElementById('container-p2').style.display = state.is1v1 ? 'block' : 'none';
+        document.getElementById('mode-indicator').innerText = state.is1v1 ? '1v1 BATTLE' : 'SOLO SEASON';
+        document.getElementById('p1-tag').innerText = state.is1v1 ? 'PLAYER 1 ROSTER' : 'YOUR ROSTER';
+        resetAll();
+    }
+
+    function toggleHide() { state.hideOvr = document.getElementById('check-hide').checked; renderBoard('p1'); renderBoard('p2'); }
+    function toggleTheme() {
+        const isLight = document.getElementById('check-theme').checked;
+        document.documentElement.setAttribute('data-theme', isLight ? 'light' : 'dark');
+    }
+
     function resetAll() {
         state.p1 = Array(6).fill(null);
         state.p2 = Array(6).fill(null);
@@ -355,7 +406,8 @@
         state.gameOver = false;
         document.getElementById('spin-btn').style.display = 'block';
         document.getElementById('spin-label').innerText = 'READY?';
-        document.getElementById('result-text').innerHTML = '';
+        document.getElementById('result-text').innerText = '';
+        document.getElementById('spin-logo').src = "https://a.espncdn.com/i/teamlogos/nfl/500/nfl.png";
         renderBoard('p1');
         renderBoard('p2');
         switchView('draft');
