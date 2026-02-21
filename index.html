@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#6366f1">
     
-    <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22Dynasty%20Draft%22,%22short_name%22:%22Dynasty%22,%22start_url%22:%22index.html%22,%22display%22:%22standalone%22,%22background_color%22:%22%2305070a%22,%22theme_color%22:%22%236366f1%22,%22icons%22:[{%22src%22:%22https://static.www.nfl.com/image/upload/v1554321393/league/ov7cxsqpp88ih9bdqcry.png%22,%22sizes%22:%22192x192%22,%22type%22:%22image/png%22}]}">
+    <link rel="manifest" href="manifest.json">
 
     <title>Dynasty Draft</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
@@ -166,7 +166,6 @@
     </style>
 </head>
 <body>
-
     <div id="intro">
         <h1 class="intro-title">DYNASTY<br>DRAFT</h1>
         <button class="primary-btn" onclick="enterApp()">PLAY</button>
@@ -233,12 +232,16 @@
     </div>
 
 <script>
-    // Service Worker Registration for "Installable" App
+    // Register Service Worker (Required for Android "Install" button)
     if ('serviceWorker' in navigator) {
-        const sw = 'data:application/javascript;base64,' + btoa('self.addEventListener("fetch", (event) => { event.respondWith(fetch(event.request)); });');
-        navigator.serviceWorker.register(sw);
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('sw.js').catch(() => {
+                // Silently fail if sw.js is missing
+            });
+        });
     }
 
+    // ALL YOUR GAME LOGIC REMAINS EXACTLY THE SAME
     const teams = [
         { name: 'Cardinals', id: 'ari' }, { name: 'Falcons', id: 'atl' }, { name: 'Ravens', id: 'bal' },
         { name: 'Bills', id: 'buf' }, { name: 'Panthers', id: 'car' }, { name: 'Bears', id: 'chi' },
