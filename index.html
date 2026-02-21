@@ -3,6 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Dynasty Draft">
+    <link rel="apple-touch-icon" href="https://static.www.nfl.com/image/upload/v1554321393/league/ov7cxsqpp88ih9bdqcry.png">
+    
     <title>Dynasty Draft</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
@@ -229,6 +234,26 @@
     </div>
 
 <script>
+    // PWA Manifest Injection
+    const manifest = {
+        "name": "Dynasty Draft",
+        "short_name": "Dynasty",
+        "start_url": ".",
+        "display": "standalone",
+        "background_color": "#05070a",
+        "theme_color": "#6366f1",
+        "icons": [{
+            "src": "https://static.www.nfl.com/image/upload/v1554321393/league/ov7cxsqpp88ih9bdqcry.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        }]
+    };
+    const manifestStr = encodeURIComponent(JSON.stringify(manifest));
+    const link = document.createElement('link');
+    link.rel = 'manifest';
+    link.href = 'data:application/json;charset=utf-8,' + manifestStr;
+    document.head.appendChild(link);
+
     const teams = [
         { name: 'Cardinals', id: 'ari' }, { name: 'Falcons', id: 'atl' }, { name: 'Ravens', id: 'bal' },
         { name: 'Bills', id: 'buf' }, { name: 'Panthers', id: 'car' }, { name: 'Bears', id: 'chi' },
@@ -354,7 +379,6 @@
 
     function finalize() {
         state.gameOver = true;
-        // NOTHING ELSE CHANGES - NO BUTTON REMOVAL, NO UI LOCKING
         confetti({ particleCount: 150, origin: { y: 0.6 } });
     }
 
