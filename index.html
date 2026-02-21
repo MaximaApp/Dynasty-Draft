@@ -186,7 +186,7 @@
                     <img src="https://static.www.nfl.com/image/upload/v1554321393/league/ov7cxsqpp88ih9bdqcry.png" id="spin-logo">
                 </div>
                 <div class="team-label" id="spin-label">READY?</div>
-                <button class="primary-btn" id="spin-btn" onclick="startSpin()">SPIN TEAM</button>
+                <button class="primary-btn" id="spin-btn" onclick="startSpin()">RANDOMIZE</button>
                 <button class="reset-btn" onclick="resetAll()">RESET GAME</button>
                 <div id="result-text" style="font-weight: 800; font-size: 1.2rem; text-align: center; margin-top: 10px;"></div>
             </div>
@@ -307,7 +307,7 @@
         ring.style.transform = 'scale(1.1)';
 
         let velocity = 50;
-        let deceleration = 1.07;
+        let deceleration = 1.06;
         let spinCount = 0;
         let maxSpins = 20 + Math.floor(Math.random() * 10);
 
