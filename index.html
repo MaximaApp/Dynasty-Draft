@@ -4,12 +4,45 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#6366f1">
+    <meta name="mobile-web-app-capable" content="yes">
     
-    <link rel="manifest" href="manifest.json">
-
     <title>Dynasty Draft</title>
+
+    <script>
+        // --- APP MAGIC (DO NOT TOUCH) ---
+        // This creates the manifest and service worker automatically
+        const manifest = {
+            "name": "Dynasty Draft",
+            "short_name": "Dynasty",
+            "start_url": ".",
+            "display": "standalone",
+            "background_color": "#05070a",
+            "theme_color": "#6366f1",
+            "icons": [{
+                "src": "https://static.www.nfl.com/image/upload/v1554321393/league/ov7cxsqpp88ih9bdqcry.png",
+                "sizes": "192x192",
+                "type": "image/png"
+            }]
+        };
+        const manifestBlob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
+        const manifestURL = URL.createObjectURL(manifestBlob);
+        const link = document.createElement('link');
+        link.rel = 'manifest';
+        link.href = manifestURL;
+        document.head.appendChild(link);
+
+        if ('serviceWorker' in navigator) {
+            const swCode = "self.addEventListener('fetch', function(event) {});";
+            const swBlob = new Blob([swCode], {type: 'application/javascript'});
+            const swURL = URL.createObjectURL(swBlob);
+            navigator.serviceWorker.register(swURL);
+        }
+        // --- END APP MAGIC ---
+    </script>
+
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    
     <style>
         :root {
             --bg: #05070a;
@@ -166,6 +199,7 @@
     </style>
 </head>
 <body>
+
     <div id="intro">
         <h1 class="intro-title">DYNASTY<br>DRAFT</h1>
         <button class="primary-btn" onclick="enterApp()">PLAY</button>
@@ -232,16 +266,6 @@
     </div>
 
 <script>
-    // Register Service Worker (Required for Android "Install" button)
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('sw.js').catch(() => {
-                // Silently fail if sw.js is missing
-            });
-        });
-    }
-
-    // ALL YOUR GAME LOGIC REMAINS EXACTLY THE SAME
     const teams = [
         { name: 'Cardinals', id: 'ari' }, { name: 'Falcons', id: 'atl' }, { name: 'Ravens', id: 'bal' },
         { name: 'Bills', id: 'buf' }, { name: 'Panthers', id: 'car' }, { name: 'Bears', id: 'chi' },
