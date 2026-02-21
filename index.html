@@ -29,14 +29,12 @@
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
-        /* FIXED: Added 100dvh to ensure bottom tab shows on mobile */
         body { 
             margin: 0; background: var(--bg); color: var(--text); 
             font-family: 'Plus Jakarta Sans', sans-serif;
             height: 100dvh; width: 100vw; overflow: hidden;
         }
 
-        /* --- INTRO PAGE --- */
         #intro {
             position: fixed; inset: 0; z-index: 2000; background: var(--bg);
             display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -51,7 +49,6 @@
         }
         @keyframes titlePulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.03); } }
 
-        /* --- TOP LEFT HEADER --- */
         .app-header {
             padding: 30px 20px 10px;
             text-align: left;
@@ -66,7 +63,6 @@
             font-weight: 600; letter-spacing: 0.5px; opacity: 0.7;
         }
 
-        /* --- MAIN LAYOUT --- */
         #app { height: 100dvh; display: flex; flex-direction: column; }
         
         .view-container {
@@ -80,7 +76,6 @@
             color: var(--accent); text-shadow: 0 0 10px var(--accent-glow);
         }
 
-        /* --- SPIN SECTION --- */
         .spin-section { padding: 20px; display: flex; flex-direction: column; align-items: center; gap: 15px; }
         .logo-ring {
             width: 150px; height: 150px; border-radius: 50%;
@@ -92,7 +87,6 @@
         .logo-ring img { width: 75%; height: 75%; object-fit: contain; transition: transform 0.2s; }
         .team-label { font-size: 1.8rem; font-weight: 800; text-shadow: 0 0 15px var(--accent-glow); }
 
-        /* --- DRAFT BOARD --- */
         .board-container { padding: 0 20px; margin-bottom: 25px; animation: slideUp 0.5s ease; }
         @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         
@@ -100,9 +94,11 @@
         .board { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
         
         .slot {
-            background: var(--card); border-radius: 20px; padding: 20px 5px;
+            background: var(--card); border-radius: 20px; padding: 15px 5px;
             text-align: center; border: 1px solid rgba(255,255,255,0.05);
             transition: all 0.4s cubic-bezier(0.2, 1, 0.3, 1);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            min-height: 100px;
         }
         .slot:active { transform: scale(0.95); }
         .slot.active-turn { border: 2px solid var(--accent); box-shadow: 0 0 15px var(--accent-glow); }
@@ -113,11 +109,10 @@
         @keyframes popIn { from { transform: scale(0.8); } to { transform: scale(1); } }
         
         .slot-pos { font-size: 0.7rem; font-weight: 800; color: var(--text-dim); margin-bottom: 5px; }
-        .slot-ovr { font-size: 1.5rem; font-weight: 800; transition: filter 0.5s ease; }
+        .slot-logo { width: 50px; height: 50px; object-fit: contain; margin-top: 5px; }
+        .slot-ovr { font-size: 1.2rem; font-weight: 800; transition: filter 0.5s ease; }
         .blur-ovr { filter: blur(10px); opacity: 0.3; }
 
-        /* --- NAVIGATION BAR --- */
-        /* FIXED: Changed background to var(--bg) and added flex-shrink: 0 */
         .nav-bar {
             height: 80px; background: var(--bg);
             display: flex; align-items: center; justify-content: space-around;
@@ -131,7 +126,6 @@
         }
         .nav-item.active { color: var(--accent); text-shadow: 0 0 10px var(--accent-glow); }
 
-        /* --- BUTTONS --- */
         .primary-btn {
             background: var(--accent); color: #fff; border: none; padding: 18px 45px;
             border-radius: 40px; font-weight: 800; font-size: 1.1rem;
@@ -147,7 +141,6 @@
         }
         .reset-btn:hover { color: #ef4444; border-color: #ef4444; }
 
-        /* --- MODAL --- */
         .modal {
             position: fixed; inset: 0; background: rgba(0,0,0,0.85);
             backdrop-filter: blur(12px); z-index: 3000;
@@ -285,9 +278,19 @@
             if(state.is1v1 && !state.gameOver && state.currentPlayer === (playerKey === 'p1' ? 1 : 2)) {
                 div.classList.add('active-turn');
             }
-            const ovrVal = player ? player.ovr : '-';
-            const blurClass = (state.hideOvr && !state.gameOver && player) ? 'blur-ovr' : '';
-            div.innerHTML = `<div class="slot-pos">${positions[i]}</div><div class="slot-ovr ${blurClass}">${ovrVal}</div>`;
+            
+            const posLabel = `<div class="slot-pos">${positions[i]}</div>`;
+            let content = `<div class="slot-ovr">-</div>`;
+            
+            if (player) {
+                const blurClass = (state.hideOvr && !state.gameOver) ? 'blur-ovr' : '';
+                content = `
+                    <img class="slot-logo" src="https://a.espncdn.com/i/teamlogos/nfl/500/${player.teamId}.png">
+                    <div class="slot-ovr ${blurClass}">${player.ovr}</div>
+                `;
+            }
+
+            div.innerHTML = posLabel + content;
             board.appendChild(div);
         });
         checkWinCondition();
@@ -339,7 +342,7 @@
                 btn.innerHTML = `<div class="slot-pos">DRAFT</div><div class="slot-ovr">${pos}</div>`;
                 btn.onclick = () => {
                     const rating = 79 + Math.floor(Math.random() * 20);
-                    activeRoster[i] = { pos, ovr: rating };
+                    activeRoster[i] = { pos, ovr: rating, teamId: team.id };
                     if(state.is1v1) state.currentPlayer = state.currentPlayer === 1 ? 2 : 1;
                     modal.classList.remove('show');
                     renderBoard('p1');
@@ -360,23 +363,6 @@
     function finalize() {
         state.gameOver = true;
         document.getElementById('spin-btn').style.display = 'none';
-        const p1Score = state.p1.reduce((sum, p) => sum + p.ovr, 0);
-        const resEl = document.getElementById('result-text');
-
-        if(state.is1v1) {
-            const p2Score = state.p2.reduce((sum, p) => sum + p.ovr, 0);
-            const p1Prob = (Math.exp(0.12 * p1Score) / (Math.exp(0.12 * p1Score) + Math.exp(0.12 * p2Score))) * 100;
-            const p1Wins = p1Prob > 50;
-            resEl.innerHTML = `PROBABILITY: ${p1Wins ? p1Prob.toFixed(1) : (100-p1Prob).toFixed(1)}%<br>${p1Wins ? 'PLAYER 1 DOMINATES' : 'PLAYER 2 DOMINATES'}`;
-        } else {
-            const avg = p1Score / 6;
-            // FIXED: Easier win logic (lower threshold and flatter curve)
-            const winChance = Math.pow((avg - 65) / 35, 1.4);
-            const wins = Math.min(17, Math.max(0, Math.floor(winChance * 17 + (Math.random() * 2))));
-            const pct = ((wins / 17) * 100).toFixed(1);
-            resEl.innerHTML = `FINAL RECORD: ${wins} - ${17-wins}<br><span style="color:var(--accent)">WIN PERCENTAGE: ${pct}%</span>`;
-            if(wins >= 14) confetti({ particleCount: 250, spread: 120 });
-        }
         renderBoard('p1');
         renderBoard('p2');
         confetti({ particleCount: 150, origin: { y: 0.6 } });
