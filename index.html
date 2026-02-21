@@ -295,8 +295,8 @@
         const ring = document.getElementById('logo-ring');
         ring.style.transform = 'scale(1.1)';
 
-        let velocity = 55;
-        let deceleration = 1.06;
+        let velocity = 50;
+        let deceleration = 1.07;
         let spinCount = 0;
         let maxSpins = 20 + Math.floor(Math.random() * 10);
 
@@ -354,8 +354,7 @@
 
     function finalize() {
         state.gameOver = true;
-        renderBoard('p1');
-        renderBoard('p2');
+        // NOTHING ELSE CHANGES - NO BUTTON REMOVAL, NO UI LOCKING
         confetti({ particleCount: 150, origin: { y: 0.6 } });
     }
 
