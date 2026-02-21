@@ -9,8 +9,7 @@
     <title>Dynasty Draft</title>
 
     <script>
-        // --- APP MAGIC (DO NOT TOUCH) ---
-        // This creates the manifest and service worker automatically
+        // --- APP MAGIC ---
         const manifest = {
             "name": "Dynasty Draft",
             "short_name": "Dynasty",
@@ -19,7 +18,7 @@
             "background_color": "#05070a",
             "theme_color": "#6366f1",
             "icons": [{
-                "src": "https://static.www.nfl.com/image/upload/v1554321393/league/ov7cxsqpp88ih9bdqcry.png",
+                "src": "https://upload.wikimedia.org/wikipedia/en/thumb/a/a2/National_Football_League_logo.svg/1280px-National_Football_League_logo.svg.png",
                 "sizes": "192x192",
                 "type": "image/png"
             }]
@@ -37,7 +36,6 @@
             const swURL = URL.createObjectURL(swBlob);
             navigator.serviceWorker.register(swURL);
         }
-        // --- END APP MAGIC ---
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
@@ -218,7 +216,7 @@
 
             <div class="spin-section">
                 <div class="logo-ring" id="logo-ring">
-                    <img src="https://static.www.nfl.com/image/upload/v1554321393/league/ov7cxsqpp88ih9bdqcry.png" id="spin-logo">
+                    <img src="https://upload.wikimedia.org/wikipedia/en/thumb/a/a2/National_Football_League_logo.svg/1280px-National_Football_League_logo.svg.png" id="spin-logo">
                 </div>
                 <div class="team-label" id="spin-label">READY?</div>
                 <button class="primary-btn" id="spin-btn" onclick="startSpin()">RANDOMIZE</button>
@@ -422,7 +420,7 @@
         document.getElementById('spin-btn').disabled = false;
         document.getElementById('spin-label').innerText = 'READY?';
         document.getElementById('result-text').innerText = '';
-        document.getElementById('spin-logo').src = "https://static.www.nfl.com/image/upload/v1554321393/league/ov7cxsqpp88ih9bdqcry.png";
+        document.getElementById('spin-logo').src = "https://upload.wikimedia.org/wikipedia/en/thumb/a/a2/National_Football_League_logo.svg/1280px-National_Football_League_logo.svg.png";
         renderBoard('p1');
         renderBoard('p2');
         switchView('draft');
