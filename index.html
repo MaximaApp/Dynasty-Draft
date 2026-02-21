@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Dynasty Draft">
-    <link rel="apple-touch-icon" href="https://static.www.nfl.com/image/upload/v1554321393/league/ov7cxsqpp88ih9bdqcry.png">
+    <meta name="theme-color" content="#6366f1">
     
+    <link rel="manifest" href="data:application/manifest+json,{%22name%22:%22Dynasty%20Draft%22,%22short_name%22:%22Dynasty%22,%22start_url%22:%22index.html%22,%22display%22:%22standalone%22,%22background_color%22:%22%2305070a%22,%22theme_color%22:%22%236366f1%22,%22icons%22:[{%22src%22:%22https://static.www.nfl.com/image/upload/v1554321393/league/ov7cxsqpp88ih9bdqcry.png%22,%22sizes%22:%22192x192%22,%22type%22:%22image/png%22}]}">
+
     <title>Dynasty Draft</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
@@ -208,7 +207,7 @@
         <div id="view-settings" class="view-container" style="display: none; padding: 20px;">
             <h2 style="font-size: 2.2rem; font-weight: 800; margin: 20px 0 30px;">SETTINGS</h2>
             <div class="settings-row" style="animation-delay: 0.1s;">
-                <span>1v1 Game</span>
+                <span>1v1 Mode</span>
                 <input type="checkbox" id="check-1v1" onchange="toggleMode()" style="width: 25px; height: 25px;">
             </div>
             <div class="settings-row" style="animation-delay: 0.2s;">
@@ -234,25 +233,11 @@
     </div>
 
 <script>
-    // PWA Manifest Injection
-    const manifest = {
-        "name": "Dynasty Draft",
-        "short_name": "Dynasty",
-        "start_url": ".",
-        "display": "standalone",
-        "background_color": "#05070a",
-        "theme_color": "#6366f1",
-        "icons": [{
-            "src": "https://static.www.nfl.com/image/upload/v1554321393/league/ov7cxsqpp88ih9bdqcry.png",
-            "sizes": "192x192",
-            "type": "image/png"
-        }]
-    };
-    const manifestStr = encodeURIComponent(JSON.stringify(manifest));
-    const link = document.createElement('link');
-    link.rel = 'manifest';
-    link.href = 'data:application/json;charset=utf-8,' + manifestStr;
-    document.head.appendChild(link);
+    // Service Worker Registration for "Installable" App
+    if ('serviceWorker' in navigator) {
+        const sw = 'data:application/javascript;base64,' + btoa('self.addEventListener("fetch", (event) => { event.respondWith(fetch(event.request)); });');
+        navigator.serviceWorker.register(sw);
+    }
 
     const teams = [
         { name: 'Cardinals', id: 'ari' }, { name: 'Falcons', id: 'atl' }, { name: 'Ravens', id: 'bal' },
