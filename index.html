@@ -109,9 +109,7 @@
         @keyframes popIn { from { transform: scale(0.8); } to { transform: scale(1); } }
         
         .slot-pos { font-size: 0.7rem; font-weight: 800; color: var(--text-dim); margin-bottom: 5px; }
-        .slot-logo { width: 50px; height: 50px; object-fit: contain; margin-top: 5px; }
-        .slot-ovr { font-size: 1.2rem; font-weight: 800; transition: filter 0.5s ease; }
-        .blur-ovr { filter: blur(10px); opacity: 0.3; }
+        .slot-logo { width: 65px; height: 65px; object-fit: contain; margin-top: 5px; }
 
         .nav-bar {
             height: 80px; background: var(--bg);
@@ -187,7 +185,7 @@
                 </div>
                 <div class="team-label" id="spin-label">READY?</div>
                 <button class="primary-btn" id="spin-btn" onclick="startSpin()">RANDOMIZE</button>
-                <button class="reset-btn" onclick="resetAll()">RESET GAME</button>
+                <button class="reset-btn" onclick="resetAll()">RESET</button>
                 <div id="result-text" style="font-weight: 800; font-size: 1.2rem; text-align: center; margin-top: 10px;"></div>
             </div>
 
@@ -205,14 +203,10 @@
         <div id="view-settings" class="view-container" style="display: none; padding: 20px;">
             <h2 style="font-size: 2.2rem; font-weight: 800; margin: 20px 0 30px;">SETTINGS</h2>
             <div class="settings-row" style="animation-delay: 0.1s;">
-                <span>1v1 Mode</span>
+                <span>1v1 Game</span>
                 <input type="checkbox" id="check-1v1" onchange="toggleMode()" style="width: 25px; height: 25px;">
             </div>
             <div class="settings-row" style="animation-delay: 0.2s;">
-                <span>Hide Overalls</span>
-                <input type="checkbox" id="check-hide" checked onchange="toggleHide()" style="width: 25px; height: 25px;">
-            </div>
-            <div class="settings-row" style="animation-delay: 0.3s;">
                 <span>Light Mode</span>
                 <input type="checkbox" id="check-theme" onchange="toggleTheme()" style="width: 25px; height: 25px;">
             </div>
@@ -255,7 +249,6 @@
         p2: Array(6).fill(null),
         currentPlayer: 1,
         is1v1: false,
-        hideOvr: true,
         isSpinning: false,
         gameOver: false
     };
@@ -283,14 +276,10 @@
             }
             
             const posLabel = `<div class="slot-pos">${positions[i]}</div>`;
-            let content = `<div class="slot-ovr">-</div>`;
+            let content = `<div style="font-size: 1.5rem; opacity: 0.1;">?</div>`;
             
             if (player) {
-                const blurClass = (state.hideOvr && !state.gameOver) ? 'blur-ovr' : '';
-                content = `
-                    <img class="slot-logo" src="https://a.espncdn.com/i/teamlogos/nfl/500/${player.teamId}.png">
-                    <div class="slot-ovr ${blurClass}">${player.ovr}</div>
-                `;
+                content = `<img class="slot-logo" src="https://a.espncdn.com/i/teamlogos/nfl/500/${player.teamId}.png">`;
             }
 
             div.innerHTML = posLabel + content;
@@ -306,7 +295,7 @@
         const ring = document.getElementById('logo-ring');
         ring.style.transform = 'scale(1.1)';
 
-        let velocity = 50;
+        let velocity = 55;
         let deceleration = 1.06;
         let spinCount = 0;
         let maxSpins = 20 + Math.floor(Math.random() * 10);
@@ -334,7 +323,6 @@
     function openDraft(team) {
         const modal = document.getElementById('draft-modal');
         const grid = document.getElementById('choice-grid');
-        // UPDATING LOGO IN MODAL
         document.getElementById('modal-team-logo').src = `https://a.espncdn.com/i/teamlogos/nfl/500/${team.id}.png`;
         grid.innerHTML = '';
         const activeRoster = state.currentPlayer === 1 ? state.p1 : state.p2;
@@ -344,10 +332,9 @@
                 const btn = document.createElement('div');
                 btn.className = 'slot filled';
                 btn.style.padding = '25px';
-                btn.innerHTML = `<div class="slot-pos">DRAFT</div><div class="slot-ovr">${pos}</div>`;
+                btn.innerHTML = `<div class="slot-pos">DRAFT</div><div class="slot-ovr" style="font-size:1.2rem; font-weight:800;">${pos}</div>`;
                 btn.onclick = () => {
-                    const rating = 79 + Math.floor(Math.random() * 20);
-                    activeRoster[i] = { pos, ovr: rating, teamId: team.id };
+                    activeRoster[i] = { pos, teamId: team.id };
                     if(state.is1v1) state.currentPlayer = state.currentPlayer === 1 ? 2 : 1;
                     modal.classList.remove('show');
                     renderBoard('p1');
@@ -367,7 +354,6 @@
 
     function finalize() {
         state.gameOver = true;
-        document.getElementById('spin-btn').style.display = 'none';
         renderBoard('p1');
         renderBoard('p2');
         confetti({ particleCount: 150, origin: { y: 0.6 } });
@@ -388,7 +374,6 @@
         resetAll();
     }
 
-    function toggleHide() { state.hideOvr = document.getElementById('check-hide').checked; renderBoard('p1'); renderBoard('p2'); }
     function toggleTheme() {
         const isLight = document.getElementById('check-theme').checked;
         document.documentElement.setAttribute('data-theme', isLight ? 'light' : 'dark');
@@ -399,7 +384,7 @@
         state.p2 = Array(6).fill(null);
         state.currentPlayer = 1;
         state.gameOver = false;
-        document.getElementById('spin-btn').style.display = 'block';
+        document.getElementById('spin-btn').disabled = false;
         document.getElementById('spin-label').innerText = 'READY?';
         document.getElementById('result-text').innerText = '';
         document.getElementById('spin-logo').src = "https://static.www.nfl.com/image/upload/v1554321393/league/ov7cxsqpp88ih9bdqcry.png";
